@@ -1539,11 +1539,18 @@
         image: String(item.image || item.Image || ''),
         description: String(item.description || item.Description || '')
       }));
+      // AUTO RENDER HOMEPAGE CUSTOMER
+      renderProductCatalog();
     }
   } catch(e) {
     console.error("Gagal load stok Google Sheets", e);
     const saved = localStorage.getItem(STORAGE_KEY_PRODUCTS);
-    if (saved) { try { products = JSON.parse(saved); } catch(err) { products = [...DEFAULT_PRODUCTS]; } }
+    if (saved) { 
+      try { products = JSON.parse(saved); } catch(err) { products = [...DEFAULT_PRODUCTS]; } 
+    } else {
+      products = [...DEFAULT_PRODUCTS];
+    }
+    renderProductCatalog();
   }
 }
 
