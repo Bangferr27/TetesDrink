@@ -1525,46 +1525,49 @@
     }
 
     async function loadProductsFromStorage() {
-  // 1. Tampilkan data lokal / default dulu instan biar NGGAK KEDIP HILANG
+  // 1. Tampilkan data lokal instan
   const saved = localStorage.getItem(STORAGE_KEY_PRODUCTS);
   if (saved) { 
     try { products = JSON.parse(saved); } catch(err) { products = [...DEFAULT_PRODUCTS]; } 
   } else {
     products = [...DEFAULT_PRODUCTS];
   }
-  renderProductCatalog(); // Langsung render tampilan awal tanpa nunggu server
+  renderProductCatalog();
 
-  // 2. Ambil data terbaru dari Google Sheets di background lalu update pelan-pelan
+  // 2. Ambil data dari Apps Script & konversi harga secara presisi
   try {
     const res = await fetch(GOOGLE_SHEETS_API_URL);
     const data = await res.json();
-    if (Array.isArray(data) && data.length > 0) {
-      products = data.map(item => {
-        // Ambil nilai harga & stok dari variasi nama header
-        const valPrice = item.price ?? item.Price ?? item.harga ?? item.Harga ?? 0;
-        const valStock = item.stock ?? item.Stock ?? item.stok ?? item.Stok ?? 0;
+    
+    // Jika format return dari Apps Script berupa array produk langsung
+    const rawList = Array.isArray(data) ? data : (data.products || []);
 
-        // Sanitasi angka (buang huruf/karakter aneh jika ada)
-        const cleanPrice = parseInt(String(valPrice).replace(/[^0-9]/g, '')) || 0;
-        const cleanStock = parseInt(String(valStock).replace(/[^0-9]/g, '')) || 0;
+    if (rawList.length > 0) {
+      products = rawList.map(item => {
+        // Ambil nilai harga dari berbagai kemungkinan nama properti
+        const rawP = item.price ?? item.Price ?? item.harga ?? item.Harga ?? 0;
+        const rawS = item.stock ?? item.Stock ?? item.stok ?? item.Stok ?? 0;
+
+        const cleanPrice = parseInt(String(rawP).replace(/[^0-9]/g, '')) || 0;
+        const cleanStock = parseInt(String(rawS).replace(/[^0-9]/g, '')) || 0;
 
         return {
-          id: String(item.id || item.ID || ''),
-          name: String(item.name || item.Name || item.nama || ''),
-          category: String(item.category || item.Category || item.kategori || 'Original'),
+          id: String(item.id || item.ID || 'prod-1'),
+          name: String(item.name || item.Name || ''),
+          category: String(item.category || item.Category || 'Original'),
           price: cleanPrice,
           stock: cleanStock,
           emoji: String(item.emoji || item.Emoji || '🥤'),
-          image: String(item.image || item.Image || item.gambar || ''),
-          description: String(item.description || item.Description || item.deskripsi || '')
+          image: String(item.image || item.Image || ''),
+          description: String(item.description || item.Description || '')
         };
       });
       
       saveProductsToStorage();
-      renderProductCatalog(); // Update stok & harga akurat dari Google Sheets
+      renderProductCatalog(); // Render ulang tampilan web dengan harga Rp 8.000
     }
   } catch(e) {
-    console.error("Gagal sync dengan Google Sheets, pakai data lokal", e);
+    console.error("Gagal sync dengan Google Sheets:", e);
   }
 }
 
