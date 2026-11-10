@@ -1539,19 +1539,29 @@
     const res = await fetch(GOOGLE_SHEETS_API_URL);
     const data = await res.json();
     if (Array.isArray(data) && data.length > 0) {
-      products = data.map(item => ({
-        id: String(item.id || item.ID || ''),
-        name: String(item.name || item.Name || ''),
-        category: String(item.category || item.Category || 'Original'),
-        price: parseInt(item.price || item.Price) || 0,
-        stock: parseInt(item.stock || item.Stock) || 0,
-        emoji: String(item.emoji || item.Emoji || '🥤'),
-        image: String(item.image || item.Image || ''),
-        description: String(item.description || item.Description || '')
-      }));
+      products = data.map(item => {
+        // Ambil nilai harga & stok dari variasi nama header
+        const valPrice = item.price ?? item.Price ?? item.harga ?? item.Harga ?? 0;
+        const valStock = item.stock ?? item.Stock ?? item.stok ?? item.Stok ?? 0;
+
+        // Sanitasi angka (buang huruf/karakter aneh jika ada)
+        const cleanPrice = parseInt(String(valPrice).replace(/[^0-9]/g, '')) || 0;
+        const cleanStock = parseInt(String(valStock).replace(/[^0-9]/g, '')) || 0;
+
+        return {
+          id: String(item.id || item.ID || ''),
+          name: String(item.name || item.Name || item.nama || ''),
+          category: String(item.category || item.Category || item.kategori || 'Original'),
+          price: cleanPrice,
+          stock: cleanStock,
+          emoji: String(item.emoji || item.Emoji || '🥤'),
+          image: String(item.image || item.Image || item.gambar || ''),
+          description: String(item.description || item.Description || item.deskripsi || '')
+        };
+      });
       
       saveProductsToStorage();
-      renderProductCatalog(); // Update stok akurat dari Google Sheets
+      renderProductCatalog(); // Update stok & harga akurat dari Google Sheets
     }
   } catch(e) {
     console.error("Gagal sync dengan Google Sheets, pakai data lokal", e);
