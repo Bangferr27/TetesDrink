@@ -1473,11 +1473,12 @@
        C. INITIALIZATION
        ============================================================ */
     window.addEventListener("DOMContentLoaded", () => {
-      loadBrandingFromStorage();
-      loadBannersFromStorage();
-      loadProductsFromStorage();
-      loadOrdersFromStorage();
-      loadSocialsFromStorage();
+  localStorage.removeItem(STORAGE_KEY_PRODUCTS); // Hapus cache lokal lama yang corrupt
+  loadBrandingFromStorage();
+  loadBannersFromStorage();
+  loadProductsFromStorage();
+  loadOrdersFromStorage();
+  loadSocialsFromStorage();
 
       renderBranding();
       renderSocials();
@@ -1528,8 +1529,7 @@
   try {
     const res = await fetch(GOOGLE_SHEETS_API_URL);
     const data = await res.json();
-    
-    // Ambil array produk dari respon Apps Script
+
     let rawList = [];
     if (Array.isArray(data)) {
       rawList = data;
@@ -1537,41 +1537,41 @@
       rawList = data.products;
     }
 
-    // Pemetaan data murni dari Google Sheets (tanpa fallback ke default)
-    products = rawList.map(item => {
-      const rawP = item.price ?? item.Price ?? item.harga ?? item.Harga ?? 0;
-      const rawS = item.stock ?? item.Stock ?? item.stok ?? item.Stok ?? 0;
+    if (rawList.length > 0) {
+      products = rawList.map((item, idx) => {
+        let rawPrice = item.price ?? item.Price ?? item.harga ?? item.Harga ?? item.PRICE ?? 0;
+        let rawStock = item.stock ?? item.Stock ?? item.stok ?? item.Stok ?? item.STOCK ?? 0;
 
-      const cleanPrice = parseInt(String(rawP).replace(/[^0-9]/g, '')) || 0;
-      const cleanStock = parseInt(String(rawS).replace(/[^0-9]/g, '')) || 0;
+        let numPrice = Number(rawPrice) || parseInt(rawPrice) || 0;
+        let numStock = Number(rawStock) || parseInt(rawStock) || 0;
 
-      return {
-        id: String(item.id || item.ID || 'prod-1'),
-        name: String(item.name || item.Name || ''),
-        category: String(item.category || item.Category || 'Original'),
-        price: cleanPrice,
-        stock: cleanStock,
-        emoji: String(item.emoji || item.Emoji || '🥤'),
-        image: String(item.image || item.Image || ''),
-        description: String(item.description || item.Description || '')
-      };
-    });
-    
-    // Simpan data murni dari Sheets ke storage & render tampilan
-    saveProductsToStorage();
-    renderProductCatalog();
+        return {
+          id: String(item.id || item.ID || 'prod-' + (idx + 1)),
+          name: String(item.name || item.Name || 'Tanpa Nama'),
+          category: String(item.category || item.Category || 'Original'),
+          price: numPrice,
+          stock: numStock,
+          emoji: String(item.emoji || item.Emoji || '🥤'),
+          image: String(item.image || item.Image || ''),
+          description: String(item.description || item.Description || '')
+        };
+      });
 
+      saveProductsToStorage();
+      renderProductCatalog();
+      return;
+    }
   } catch(e) {
     console.error("Gagal sync data Google Sheets:", e);
-    // Kalau koneksi internet putus total, baru baca cache lokal terakhir yang tersimpan
-    const saved = localStorage.getItem(STORAGE_KEY_PRODUCTS);
-    if (saved) {
-      try { products = JSON.parse(saved); } catch(err) { products = []; }
-    } else {
-      products = [];
-    }
-    renderProductCatalog();
   }
+
+  const saved = localStorage.getItem(STORAGE_KEY_PRODUCTS);
+  if (saved) {
+    try { products = JSON.parse(saved); } catch(err) { products = []; }
+  } else {
+    products = [];
+  }
+  renderProductCatalog();
 }
 
     function saveProductsToStorage() {
