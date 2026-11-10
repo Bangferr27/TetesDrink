@@ -1471,22 +1471,23 @@
     /* ============================================================
        C. INITIALIZATION
        ============================================================ */
-    window.addEventListener("DOMContentLoaded", () => {
-      loadBrandingFromStorage();
-      loadBannersFromStorage();
-      loadProductsFromStorage();
-      loadOrdersFromStorage();
-      loadSocialsFromStorage();
+    window.addEventListener("DOMContentLoaded", async () => {
+  loadBrandingFromStorage();
+  loadBannersFromStorage();
+  loadOrdersFromStorage();
+  loadSocialsFromStorage();
 
-      renderBranding();
-      renderSocials();
-      updateStoreStatus();
-      setInterval(updateStoreStatus, 60000);
-      renderCarousel();
-      renderProductCatalog();
-      updateCartBadge();
-      lucide.createIcons();
-    });
+  await fetchProductsFromSpreadsheet(); // <- Panggil fungsi baru di sini
+
+  renderBranding();
+  renderSocials();
+  updateStoreStatus();
+  setInterval(updateStoreStatus, 60000);
+  renderCarousel();
+  renderProductCatalog();
+  updateCartBadge();
+  lucide.createIcons();
+});
 
     function loadBrandingFromStorage() {
       const saved = localStorage.getItem(STORAGE_KEY_BRANDING);
@@ -1523,15 +1524,34 @@
       localStorage.setItem(STORAGE_KEY_BANNERS, JSON.stringify(banners));
     }
 
-    function loadProductsFromStorage() {
-      const saved = localStorage.getItem(STORAGE_KEY_PRODUCTS);
-      if (saved) {
-        try { products = JSON.parse(saved); } catch(e) { products = [...DEFAULT_PRODUCTS]; }
-      } else {
-        products = [...DEFAULT_PRODUCTS];
-        saveProductsToStorage();
-      }
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbycCC1MQhAsBtOqtN2lm1fxh5-tLiHfOFrgF58Q9dFEaZLfowNcxOgwmvK1ufmpUQqw/exec";
+
+// Ambil data produk real-time dari Spreadsheet via Apps Script
+async function fetchProductsFromSpreadsheet() {
+  try {
+    const res = await fetch(APPS_SCRIPT_URL);
+    const data = await res.json();
+    if (Array.isArray(data) && data.length > 0) {
+      products = data.map(item => ({
+        id: String(item.id || ''),
+        name: item.name || '',
+        category: item.category || 'Original',
+        price: parseInt(item.price) || 0,
+        stock: parseInt(item.stock) || 0,
+        emoji: item.emoji || '🥤',
+        image: item.image || '',
+        description: item.description || ''
+      }));
+      saveProductsToStorage();
     }
+  } catch (err) {
+    console.warn("Gagal sinkronisasi dari Spreadsheet, pakai cache lokal:", err);
+    loadProductsFromStorage();
+  } finally {
+    renderProductCatalog();
+    refreshAdminData();
+  }
+}
 
     function saveProductsToStorage() {
       localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(products));
@@ -2528,6 +2548,42 @@
         renderProductCatalog();
       }
     }
+
+    // Sinkronisasi Simpan / Edit Varian ke Spreadsheet
+  async function syncProductToSpreadsheet(productData) {
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "save", data: productData })
+      });
+    } catch (err) { console.error("Gagal sync simpan:", err); }
+  }
+
+  // Sinkronisasi Hapus Varian ke Spreadsheet
+  async function syncDeleteToSpreadsheet(productId) {
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "delete", id: productId })
+      });
+    } catch (err) { console.error("Gagal sync hapus:", err); }
+  }
+
+  // Sinkronisasi Update Stok Real-time ke Spreadsheet
+  async function syncStockToSpreadsheet(productId, newStock) {
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "updateStock", id: productId, stock: newStock })
+      });
+    } catch (err) { console.error("Gagal sync stok:", err); }
+  }
 
     /* ============================================================
        I. PRODUCT ADD / EDIT MODAL
