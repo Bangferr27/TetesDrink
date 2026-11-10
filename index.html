@@ -2521,7 +2521,7 @@
       const err = document.getElementById("adminPinError");
       const enteredPin = pinInput.value.trim();
 
-      if (enteredPin === ADMIN_PIN || enteredPin === "1234") {
+      if (enteredPin === ADMIN_PIN) {
         closeAdminAuthModal();
         openAdminDashboard();
       } else {
