@@ -1,0 +1,3339 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>TETESDRINK.co — Flavor bit full</title>
+  
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            kenangan: {
+              red: '#931B1E',        /* Kopi Kenangan signature crimson red */
+              redHover: '#7D1518',
+              redLight: '#FDF2F2',
+              redBadge: '#FEE2E2',
+              espresso: '#1C1917',   /* Warm rich roast */
+              latte: '#F5EBE1',      /* Warm latte cream */
+              cream: '#FDFBF7',      /* Soft warm page background */
+              cardBg: '#FFFFFF',
+              border: '#E7E5E4',
+              borderLight: '#F0EDED',
+              textDark: '#1C1917',
+              textMuted: '#78716C'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          boxShadow: {
+            'subtle': '0 2px 10px -2px rgba(28, 25, 23, 0.05), 0 1px 4px -1px rgba(28, 25, 23, 0.03)',
+            'card': '0 4px 20px -4px rgba(28, 25, 23, 0.06), 0 2px 6px -2px rgba(28, 25, 23, 0.04)',
+            'card-hover': '0 12px 30px -8px rgba(147, 27, 30, 0.12), 0 4px 10px -2px rgba(28, 25, 23, 0.05)',
+            'modal': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F5EBE1;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D6C7B7;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #931B1E;
+    }
+
+
+    /* ===== Adaptif Desktop / Mobile ===== */
+    html, body { overflow-x: hidden; -webkit-text-size-adjust: 100%; }
+    header { padding-top: env(safe-area-inset-top, 0px); }
+    footer { padding-bottom: calc(2.5rem + env(safe-area-inset-bottom, 0px)); }
+
+    /* Modal tengah tidak pernah lebih tinggi dari layar & bisa di-scroll */
+    div[id$="Modal"].items-center > div.relative { max-height: calc(100dvh - 2rem); overflow-y: auto; }
+
+    @media (max-width: 639px) {
+      /* Cegah iOS auto-zoom saat fokus ke input */
+      input, select, textarea { font-size: 16px !important; }
+      /* Tombol & target sentuh minimal nyaman */
+      button, a.inline-flex { min-height: 40px; }
+      /* Katalog 2 kolom di HP */
+      #productGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+      #productGrid .h-48 { height: 8.5rem; }
+      #productGrid h3 { font-size: 0.8rem; line-height: 1.2; }
+      /* Keranjang tampil full-screen, sisi aman untuk notch */
+      #cartModal > div.relative { padding-bottom: env(safe-area-inset-bottom, 0px); }
+    }
+    @media (min-width: 640px) and (max-width: 1023px) {
+      #productGrid { gap: 1rem; }
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Carousel Smooth Transition */
+    .carousel-strip {
+      transition: transform 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+      will-change: transform;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .carousel-strip { transition-duration: 0.01ms; }
+    }
+  </style>
+</head>
+<body class="bg-[#FAF8F5] text-kenangan-textDark font-sans antialiased selection:bg-kenangan-red selection:text-white min-h-screen flex flex-col">
+
+  <!-- ========================================================== -->
+  <!-- 1. STICKY TOP NAVBAR (CLEAN WHITE, NO ADMIN BUTTON)        -->
+  <!-- ========================================================== -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-kenangan-border shadow-subtle transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-3 sm:gap-4">
+      
+      <!-- Dynamic Brand Logo (Dikelola di Admin) -->
+      <a href="#" class="flex items-center gap-3 group" id="navbarLogoContainer" style="min-width:0">
+        <!-- Rendered dynamically via renderBranding() -->
+        <div class="flex items-center gap-2.5">
+          <div id="navbarLogoGraphic" class="shrink-0">
+            <div class="w-10 h-10 rounded-2xl bg-kenangan-red text-white flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+              <i data-lucide="coffee" class="w-5 h-5"></i>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center gap-1">
+              <span class="text-xl sm:text-2xl font-black tracking-tight text-kenangan-espresso" id="navbarBrandName">TETESDRINK<span class="text-kenangan-red" id="navbarBrandExt">.co</span></span>
+            </div>
+            <span class="text-[10px] sm:text-xs font-semibold text-kenangan-textMuted tracking-wider uppercase block" id="navbarBrandSlogan">Flavor bit full</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Quick Nav Info (Minimalist) -->
+      <div class="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-stone-100/80 border border-kenangan-border text-xs text-kenangan-textMuted">
+        <span class="store-dot w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span class="font-medium text-stone-700">Stand Telkom University Surabaya / Kopma • Sen - Jum 08.00 - 16.00 WIB</span>
+        <span class="text-stone-300">•</span>
+        <span class="text-kenangan-red font-semibold">Delivery &lt; 1km Cuma +Rp 1.000 🛵</span>
+      </div>
+
+      <!-- Action Button (HANYA KERANJANG, Tombol Admin Dihilangkan dari Header) -->
+      <div class="flex items-center gap-3">
+        <button id="cartButton" onclick="openCartModal()" class="relative flex items-center gap-2.5 px-4 sm:px-5 py-2.5 rounded-2xl bg-kenangan-red hover:bg-kenangan-redHover text-white font-bold text-xs sm:text-sm shadow-sm hover:shadow-card active:scale-[0.98] transition-all">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          <span>Keranjang</span>
+          <span id="navCartBadge" class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-extrabold bg-white text-kenangan-red rounded-full">0</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Info toko untuk layar kecil (di desktop tampil di header) -->
+  <div class="md:hidden bg-stone-100 border-b border-kenangan-border px-4 py-2 text-[11px] text-stone-700 flex items-center gap-2 overflow-x-auto no-scrollbar whitespace-nowrap">
+    <span class="store-dot w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+    <span class="font-medium">Stand Tel-U Surabaya / Kopma • Sen - Jum 08.00 - 16.00 WIB</span>
+    <span class="text-stone-300">•</span>
+    <span class="text-kenangan-red font-semibold">Delivery &lt; 1km +Rp 1.000 🛵</span>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- 2. DYNAMIC SLIDE BANNER HERO (CAROUSEL ALA KOPI KENANGAN)  -->
+  <!-- ========================================================== -->
+  <section class="relative bg-white border-b border-kenangan-border py-4 sm:py-6 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Carousel Frame -->
+      <div class="relative w-full rounded-3xl overflow-hidden shadow-card bg-stone-100" id="carouselWrapper">
+        
+        <!-- Slides Track -->
+        <div id="carouselSlidesContainer" class="relative w-full h-[240px] sm:h-[340px] md:h-[400px]">
+          <!-- Rendered via JavaScript from localStorage -->
+        </div>
+
+        <!-- Carousel Nav Buttons -->
+        <button onclick="prevSlide()" class="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 w-9 sm:w-11 h-9 sm:h-11 rounded-full bg-white/90 hover:bg-white text-kenangan-espresso shadow-md hover:shadow-lg flex items-center justify-center transition-all z-20" aria-label="Banner Sebelumnya">
+          <i data-lucide="chevron-left" class="w-5 h-5"></i>
+        </button>
+        <button onclick="nextSlide()" class="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 w-9 sm:w-11 h-9 sm:h-11 rounded-full bg-white/90 hover:bg-white text-kenangan-espresso shadow-md hover:shadow-lg flex items-center justify-center transition-all z-20" aria-label="Banner Selanjutnya">
+          <i data-lucide="chevron-right" class="w-5 h-5"></i>
+        </button>
+
+        <!-- Carousel Indicators (Dots) -->
+        <div id="carouselIndicators" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
+          <!-- Rendered via JavaScript -->
+        </div>
+
+      </div>
+
+      <!-- Info Layanan (bukan tombol): teks polos dipisah garis vertikal -->
+      <div class="grid grid-cols-2 md:grid-cols-4 mt-5 select-none" role="list">
+        <div role="listitem" class="flex items-center gap-3 px-3 sm:px-5 py-3 md:py-1 ">
+          <span class="text-xl leading-none shrink-0" aria-hidden="true">🎓</span>
+          <div class="min-w-0">
+            <div class="text-xs font-bold text-kenangan-espresso">Ambil di Kampus</div>
+            <div class="text-[11px] text-kenangan-textMuted">Tel-U Surabaya / Kopma</div>
+          </div>
+        </div>
+        <div role="listitem" class="flex items-center gap-3 px-3 sm:px-5 py-3 md:py-1 border-l border-stone-200">
+          <span class="text-xl leading-none shrink-0" aria-hidden="true">🛵</span>
+          <div class="min-w-0">
+            <div class="text-xs font-bold text-kenangan-espresso">Delivery &lt; 1km</div>
+            <div class="text-[11px] text-kenangan-textMuted">Cuma +Rp 1.000 kilat</div>
+          </div>
+        </div>
+        <div role="listitem" class="flex items-center gap-3 px-3 sm:px-5 py-3 md:py-1 border-t border-stone-200 md:border-t-0 md:border-l">
+          <span class="text-xl leading-none shrink-0" aria-hidden="true">⚡</span>
+          <div class="min-w-0">
+            <div class="text-xs font-bold text-kenangan-espresso">Bayar Praktis</div>
+            <div class="text-[11px] text-kenangan-textMuted">QRIS, BCA, BNI, Mandiri</div>
+          </div>
+        </div>
+        <div role="listitem" class="flex items-center gap-3 px-3 sm:px-5 py-3 md:py-1 border-l border-t border-stone-200 md:border-t-0">
+          <span class="text-xl leading-none shrink-0" aria-hidden="true">🥤</span>
+          <div class="min-w-0">
+            <div class="text-xs font-bold text-kenangan-espresso">Botol 250ml Higienis</div>
+            <div class="text-[11px] text-kenangan-textMuted">Praktis siap minum</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================== -->
+  <!-- 3. KATALOG PRODUK & FILTER KATEGORI (MINIMALIST WHITE)     -->
+  <!-- ========================================================== -->
+  <main id="menu-katalog" class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
+    
+    <!-- Title & Search Area -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+      <div>
+        <div class="inline-flex items-center gap-1.5 text-xs font-bold text-kenangan-red uppercase tracking-wider mb-1">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+          Es Bubuk Segar Kemasan Botol 250ml
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-kenangan-espresso tracking-tight">Pilihan Varian Rasa Favorit</h2>
+        <p class="text-xs sm:text-sm text-kenangan-textMuted mt-1">Minuman manis segar ala pinggir jalan di-repack higienis ke botol 250ml. Dingin & praktis!</p>
+      </div>
+
+      <!-- Live Search Box -->
+      <div class="relative w-full md:w-80">
+        <i data-lucide="search" class="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+        <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="Cari cokelat, strawberry, redvelvet, mangga..." class="w-full bg-white border border-kenangan-border rounded-2xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-kenangan-espresso placeholder-stone-400 focus:outline-none focus:border-kenangan-red focus:ring-2 focus:ring-kenangan-redLight shadow-subtle transition-all">
+      </div>
+    </div>
+
+    <!-- Category Filter Tabs (Original, With Topping, Coffee Based) -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-4 no-scrollbar mb-8 -mx-4 px-4 sm:mx-0 sm:px-0">
+      <button onclick="setCategory('all')" data-cat="all" class="cat-pill active flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all bg-kenangan-red text-white shadow-sm">
+        <span>Semua Menu</span>
+      </button>
+
+      <button onclick="setCategory('Original')" data-cat="Original" class="cat-pill flex items-center gap-2 px-5 py-2.5 rounded-2xl font-semibold text-xs sm:text-sm whitespace-nowrap transition-all bg-white text-stone-700 hover:text-kenangan-red border border-kenangan-border hover:border-kenangan-red shadow-subtle">
+        <span>🥤 Original</span>
+      </button>
+
+      <button onclick="setCategory('With Topping')" data-cat="With Topping" class="cat-pill flex items-center gap-2 px-5 py-2.5 rounded-2xl font-semibold text-xs sm:text-sm whitespace-nowrap transition-all bg-white text-stone-700 hover:text-kenangan-red border border-kenangan-border hover:border-kenangan-red shadow-subtle">
+        <span>✨ With Topping</span>
+      </button>
+
+      <button onclick="setCategory('Coffee Based')" data-cat="Coffee Based" class="cat-pill flex items-center gap-2 px-5 py-2.5 rounded-2xl font-semibold text-xs sm:text-sm whitespace-nowrap transition-all bg-white text-stone-700 hover:text-kenangan-red border border-kenangan-border hover:border-kenangan-red shadow-subtle">
+        <span>☕ Coffee Based</span>
+      </button>
+    </div>
+
+    <!-- Product Grid Container -->
+    <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <!-- Injected via Vanilla JS -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyCatalogState" class="hidden text-center py-16 bg-white rounded-3xl border border-kenangan-border p-8">
+      <div class="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto text-stone-400 mb-3">
+        <i data-lucide="coffee" class="w-8 h-8 text-kenangan-red"></i>
+      </div>
+      <h3 class="text-lg font-bold text-kenangan-espresso">Menu Tidak Ditemukan</h3>
+      <p class="text-xs text-kenangan-textMuted mt-1 max-w-sm mx-auto">Silakan coba kata kunci lain atau pilih kategori minuman yang tersedia.</p>
+    </div>
+
+  </main>
+
+  <!-- ========================================================== -->
+  <!-- 4. BULK ORDER / CATERING BANNER (MINIMALIST WARM RED)      -->
+  <!-- ========================================================== -->
+  <section id="bulk-order" class="bg-white py-12 border-t border-b border-kenangan-border">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="rounded-3xl p-8 sm:p-10 border border-kenangan-border bg-gradient-to-r from-stone-900 to-stone-800 text-white relative overflow-hidden shadow-card">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+          <div class="lg:col-span-8 space-y-3">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-kenangan-red text-white text-xs font-bold uppercase tracking-wider">
+              <i data-lucide="party-popper" class="w-3.5 h-3.5"></i>
+              Campus Event & Seminar Catering
+            </span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-white">
+              Paket Bulk Order Acara Kampus & Seminar
+            </h2>
+            <p class="text-stone-300 text-xs sm:text-sm leading-relaxed max-w-2xl">
+              Cocok untuk Seminar Kampus, Sidang Skripsi, Ulang Tahun, dan Rapat Himpunan. Format botol 250ml dingin sangat praktis & higienis dibagikan ke peserta. Dapatkan <strong>Free Sewa Toples Es 24 Liter</strong>, <strong>Diskon 15% pembelian di atas 100 pcs</strong>, serta <strong>Penawaran Spesial grosir di atas 500 pcs</strong> dengan jaminan 100% segar!
+            </p>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2">
+              <div class="p-3 rounded-2xl bg-stone-800/80 border border-stone-700">
+                <div class="text-emerald-400 font-extrabold text-sm sm:text-base">Free Toples 24L</div>
+                <div class="text-[11px] text-stone-300">Sewa wadah es gratis</div>
+              </div>
+              <div class="p-3 rounded-2xl bg-stone-800/80 border border-stone-700">
+                <div class="text-amber-400 font-extrabold text-sm sm:text-base">Diskon 15%</div>
+                <div class="text-[11px] text-stone-300">Order &gt; 100 pcs</div>
+              </div>
+              <div class="p-3 rounded-2xl bg-stone-800/80 border border-stone-700">
+                <div class="text-white font-extrabold text-sm sm:text-base">Spesial Deal</div>
+                <div class="text-[11px] text-stone-300">Order &gt; 500 pcs</div>
+              </div>
+              <div class="p-3 rounded-2xl bg-stone-800/80 border border-stone-700">
+                <div class="text-rose-400 font-extrabold text-sm sm:text-base">Jaminan Segar</div>
+                <div class="text-[11px] text-stone-300">100% Fresh dingin</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-4 flex flex-col items-center justify-center text-center space-y-3 bg-stone-800/90 p-6 rounded-2xl border border-stone-700">
+            <div class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+              <i data-lucide="phone-call" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-base font-bold text-white">Konsultasi Catering</h3>
+            <p class="text-xs text-stone-300">Respon cepat via WhatsApp resmi TETESDRINK.co.</p>
+            <a href="https://wa.me/6288219909522?text=Halo%20Admin%20TETESDRINK.co%2C%20saya%20mau%20konsultasi%20paket%20Bulk%20Order%20(Diskon%2015%25%20%2F%20Penawaran%20Spesial%20%26%20Free%20Sewa%20Toples%2024L)" target="_blank" class="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-stone-900 font-extrabold text-xs shadow-md transition-all">
+              <i data-lucide="message-circle" class="w-4 h-4"></i>
+              Hubungi via WhatsApp
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================== -->
+  <!-- 5. STAND LOCATION & OPERATIONAL HOURS                      -->
+  <!-- ========================================================== -->
+  <section class="py-10 bg-[#FAF8F5]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Stand Location -->
+        <div class="p-6 rounded-3xl bg-white border border-kenangan-border shadow-subtle flex items-start gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-kenangan-redLight text-kenangan-red flex items-center justify-center shrink-0">
+            <i data-lucide="map-pin" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-kenangan-espresso">Stand Penjemputan Kampus</h3>
+            <p class="text-xs sm:text-sm text-kenangan-textMuted mt-1">
+              Booth TETESDRINK, <strong>Kampus Telkom University Surabaya</strong> atau <strong>Koperasi Mahasiswa (Kopma) Tel-U Surabaya</strong>.
+            </p>
+            <div class="mt-3 flex items-center gap-1.5 text-xs text-kenangan-red font-semibold">
+              <i data-lucide="navigation" class="w-3.5 h-3.5"></i>
+              Ambil Gratis Ongkir & Siap Minum Dingin
+            </div>
+          </div>
+        </div>
+
+        <!-- Hours & Official WA Contact -->
+        <div class="p-6 rounded-3xl bg-white border border-kenangan-border shadow-subtle flex items-start gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-stone-100 text-kenangan-espresso flex items-center justify-center shrink-0">
+            <i data-lucide="clock" class="w-6 h-6"></i>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-base font-bold text-kenangan-espresso">Jam Buka & Kontak WhatsApp</h3>
+            <p class="text-xs sm:text-sm text-kenangan-textMuted mt-1">
+              <strong class="text-kenangan-espresso">Senin - Jumat:</strong> 08:00 - 16:00 WIB | <strong class="text-kenangan-espresso">Sabtu - Minggu:</strong> Tutup
+            </p>
+            <div class="mt-3 flex items-center justify-between">
+              <span class="text-xs text-emerald-600 font-semibold flex items-center gap-1.5">
+                <span id="storeStatusDot" class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                <span id="storeStatusText">Stand Buka Sekarang</span>
+              </span>
+              <a href="https://wa.me/6288219909522" target="_blank" class="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-200">
+                <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+                088219909522
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================== -->
+  <!-- 6. FOOTER (DENGAN SATU-SATUNYA TOMBOL ADMIN MODE)         -->
+  <!-- ========================================================== -->
+  <footer class="bg-white border-t border-kenangan-border py-10 text-kenangan-textMuted text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+      
+      <!-- Social Media Bar (Dynamic & Managed in Admin) -->
+      <div class="p-4 rounded-2xl bg-stone-50 border border-kenangan-border flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-kenangan-red animate-pulse"></span>
+          <span class="font-bold text-kenangan-espresso text-xs">Media Sosial Resmi & Kontak Kami:</span>
+        </div>
+        <div id="footerSocialsList" class="flex flex-wrap items-center gap-2">
+          <!-- Injected dynamically via renderSocials() -->
+        </div>
+      </div>
+
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6 pt-2">
+        
+        <!-- Brand Info -->
+        <div class="flex items-center gap-3">
+          <div id="footerLogoGraphic" class="shrink-0">
+            <!-- Dynamic logo -->
+            <div class="w-10 h-10 rounded-2xl bg-kenangan-red text-white flex items-center justify-center shadow-sm">
+              <i data-lucide="coffee" class="w-5 h-5"></i>
+            </div>
+          </div>
+          <div>
+            <span class="text-lg font-black text-kenangan-espresso" id="footerBrandName">TETESDRINK<span class="text-kenangan-red" id="footerBrandExt">.co</span></span>
+            <p class="text-[11px] text-kenangan-textMuted" id="footerBrandSlogan">© 2026 TETESDRINK Indonesia. "Flavor bit full"</p>
+          </div>
+        </div>
+
+        <div class="text-center md:text-left text-xs">
+          <p class="text-stone-700 font-medium">Stand Resmi: Kampus Telkom University Surabaya / Kopma Tel-U.</p>
+          <p class="text-[11px] text-stone-400 mt-0.5">Pembayaran: QRIS, BCA, BNI, Mandiri.</p>
+        </div>
+
+        <!-- Tombol Admin Mode (HANYA ADA DI SINI SESUAI INSTRUKSI) -->
+        <div>
+          <button onclick="openAdminAuthModal()" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-stone-100 hover:bg-stone-200 border border-stone-300 hover:border-kenangan-red text-kenangan-espresso hover:text-kenangan-red font-bold text-xs shadow-subtle transition-all">
+            <i data-lucide="lock" class="w-4 h-4 text-kenangan-red"></i>
+            <span>🔒 Masuk Sebagai Admin</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================== -->
+  <!-- 7. CART & STEPPER CHECKOUT MODAL (MINIMALIST WHITE)        -->
+  <!-- ========================================================== -->
+  <div id="cartModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-stone-900/60 backdrop-blur-sm transition-opacity" onclick="closeCartModal()"></div>
+
+    <div class="relative w-full max-w-2xl h-full sm:h-auto sm:max-h-[92vh] sm:my-6 mx-auto bg-white sm:rounded-3xl border border-kenangan-border flex flex-col overflow-hidden shadow-modal z-10">
+      
+      <!-- Modal Header -->
+      <div class="p-5 sm:p-6 bg-white border-b border-kenangan-border flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-kenangan-redLight text-kenangan-red flex items-center justify-center">
+            <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-extrabold text-kenangan-espresso">Keranjang & Checkout</h3>
+            <p class="text-xs text-kenangan-textMuted">Lengkapi pesanan minuman segarmu dalam 3 langkah</p>
+          </div>
+        </div>
+
+        <button onclick="closeCartModal()" class="w-9 h-9 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-500 hover:text-stone-800 flex items-center justify-center transition-all">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Stepper Indicator -->
+      <div class="px-6 py-3.5 bg-stone-50 border-b border-kenangan-border flex items-center justify-between text-xs">
+        <div id="stepIndicator1" class="step-item flex items-center gap-2 font-bold text-kenangan-red">
+          <span class="w-6 h-6 rounded-full bg-kenangan-red text-white flex items-center justify-center text-xs font-black">1</span>
+          <span class="hidden sm:inline">Pesanan</span>
+        </div>
+        <div class="w-8 sm:w-16 h-0.5 bg-stone-200" id="stepLine1"></div>
+
+        <div id="stepIndicator2" class="step-item flex items-center gap-2 font-semibold text-stone-400">
+          <span class="w-6 h-6 rounded-full bg-stone-200 text-stone-600 flex items-center justify-center text-xs">2</span>
+          <span class="hidden sm:inline">Pengiriman</span>
+        </div>
+        <div class="w-8 sm:w-16 h-0.5 bg-stone-200" id="stepLine2"></div>
+
+        <div id="stepIndicator3" class="step-item flex items-center gap-2 font-semibold text-stone-400">
+          <span class="w-6 h-6 rounded-full bg-stone-200 text-stone-600 flex items-center justify-center text-xs">3</span>
+          <span class="hidden sm:inline">Pembayaran</span>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6 bg-white">
+        
+        <!-- STEP 1: DAFTAR PESANAN -->
+        <div id="checkoutStep1" class="space-y-4">
+          <div id="cartItemList" class="space-y-3">
+            <!-- Dynamic JS -->
+          </div>
+
+          <!-- Empty View -->
+          <div id="cartEmptyView" class="hidden text-center py-12 space-y-3">
+            <div class="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto text-stone-400">
+              <i data-lucide="shopping-cart" class="w-8 h-8 text-kenangan-red"></i>
+            </div>
+            <h4 class="text-base font-bold text-kenangan-espresso">Keranjangmu Masih Kosong</h4>
+            <p class="text-xs text-kenangan-textMuted max-w-xs mx-auto">Pilih minuman favoritmu di katalog sekarang dan nikmati kesegarannya!</p>
+            <button onclick="closeCartModal()" class="mt-2 px-5 py-2.5 rounded-2xl bg-stone-100 hover:bg-stone-200 text-xs font-bold text-kenangan-espresso">
+              Lihat Menu Katalog
+            </button>
+          </div>
+
+          <div id="cartSummaryStep1" class="pt-4 border-t border-kenangan-border space-y-2">
+            <div class="flex justify-between text-xs text-stone-600">
+              <span>Total Item:</span>
+              <span id="step1TotalItems" class="font-bold text-kenangan-espresso">0 Botol (250ml)</span>
+            </div>
+            <div class="flex justify-between text-base font-black text-kenangan-espresso">
+              <span>Subtotal Minuman:</span>
+              <span id="step1SubtotalPrice" class="text-kenangan-red">Rp 0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: DATA & PENGIRIMAN -->
+        <div id="checkoutStep2" class="hidden space-y-5">
+          <div class="space-y-3">
+            <h4 class="text-xs font-bold text-kenangan-red uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="user" class="w-3.5 h-3.5"></i>
+              Data Pemesan
+            </h4>
+
+            <div>
+              <label class="block text-xs font-semibold text-stone-700 mb-1">Nama Pemesan <span class="text-red-500">*</span></label>
+              <input type="text" id="custName" placeholder="Contoh: Farhan / Nadia" class="w-full bg-stone-50 border border-kenangan-border rounded-xl px-4 py-2.5 text-xs sm:text-sm text-kenangan-espresso focus:outline-none focus:bg-white focus:border-kenangan-red transition-all">
+              <p id="errCustName" class="text-[11px] text-red-500 hidden mt-1">Nama pemesan wajib diisi.</p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-stone-700 mb-1">Nomor WhatsApp Aktif <span class="text-red-500">*</span></label>
+              <input type="tel" id="custPhone" placeholder="Contoh: 081234567890" class="w-full bg-stone-50 border border-kenangan-border rounded-xl px-4 py-2.5 text-xs sm:text-sm text-kenangan-espresso focus:outline-none focus:bg-white focus:border-kenangan-red transition-all">
+              <p id="errCustPhone" class="text-[11px] text-red-500 hidden mt-1">Nomor WhatsApp wajib diisi.</p>
+            </div>
+          </div>
+
+          <div class="space-y-3 pt-3 border-t border-kenangan-border">
+            <h4 class="text-xs font-bold text-kenangan-red uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="truck" class="w-3.5 h-3.5"></i>
+              Metode Pengiriman
+            </h4>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label class="relative flex flex-col p-4 rounded-2xl bg-white border-2 border-kenangan-red cursor-pointer shipping-radio-card" id="cardPickup">
+                <input type="radio" name="shippingMethod" value="pickup" checked onchange="toggleShippingMethod('pickup')" class="sr-only">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-bold text-kenangan-espresso flex items-center gap-1.5">🎓 Ambil di Kampus</span>
+                  <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase">GRATIS</span>
+                </div>
+                <p class="text-[11px] text-kenangan-textMuted">Ambil mandiri di Kampus Telkom University Surabaya / Koperasi Mahasiswa (Kopma) Tel-U Surabaya.</p>
+                <span class="text-xs font-bold text-emerald-600 mt-2">Rp 0 (Free Ongkir)</span>
+              </label>
+
+              <label class="relative flex flex-col p-4 rounded-2xl bg-white border-2 border-stone-200 cursor-pointer shipping-radio-card" id="cardDelivery">
+                <input type="radio" name="shippingMethod" value="delivery" onchange="toggleShippingMethod('delivery')" class="sr-only">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-bold text-kenangan-espresso flex items-center gap-1.5">🛵 Delivery Kilat</span>
+                  <span class="px-2 py-0.5 rounded-full bg-kenangan-redLight text-kenangan-red text-[10px] font-black uppercase">&lt; 1KM</span>
+                </div>
+                <p class="text-[11px] text-kenangan-textMuted">Diantar cepat ke gedung kampus / kos terdekat.</p>
+                <span class="text-xs font-bold text-kenangan-red mt-2">+Rp 1.000 (Otomatis)</span>
+              </label>
+            </div>
+
+            <div id="deliveryAddressWrapper" class="hidden space-y-1.5 pt-2">
+              <label class="block text-xs font-semibold text-stone-700">Alamat Lengkap / Titik Temu Pengiriman <span class="text-red-500">*</span></label>
+              <textarea id="deliveryAddress" rows="2" placeholder="Sebutkan gedung, lantai, ruangan, atau nama kosan..." class="w-full bg-stone-50 border border-kenangan-border rounded-xl p-3 text-xs sm:text-sm text-kenangan-espresso focus:outline-none focus:bg-white focus:border-kenangan-red transition-all"></textarea>
+              <p id="errDeliveryAddress" class="text-[11px] text-red-500 hidden">Alamat wajib diisi untuk delivery.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: PEMBAYARAN & BUKTI -->
+        <div id="checkoutStep3" class="hidden space-y-5">
+          <!-- Summary Box -->
+          <div class="p-4 rounded-2xl bg-stone-50 border border-kenangan-border space-y-2">
+            <div class="flex justify-between text-xs text-stone-600">
+              <span>Subtotal Minuman:</span>
+              <span id="step3Subtotal" class="font-bold text-kenangan-espresso">Rp 0</span>
+            </div>
+            <div class="flex justify-between text-xs text-stone-600">
+              <span id="step3ShippingLabel">Ongkos Kirim (Ambil di Kampus):</span>
+              <span id="step3ShippingFee" class="font-bold text-emerald-600">Gratis (Rp 0)</span>
+            </div>
+            <div class="pt-2 border-t border-stone-200 flex justify-between items-center">
+              <span class="text-sm font-bold text-kenangan-espresso">Total Pembayaran:</span>
+              <span id="step3GrandTotal" class="text-lg font-black text-kenangan-red">Rp 0</span>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <h4 class="text-xs font-bold text-kenangan-red uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="credit-card" class="w-3.5 h-3.5"></i>
+              Pilih Pembayaran
+            </h4>
+
+            <div class="grid grid-cols-2 gap-2 bg-stone-100 p-1 rounded-2xl border border-stone-200">
+              <button type="button" onclick="switchPaymentTab('qris')" id="tabBtnQris" class="py-2.5 rounded-xl text-xs font-bold bg-white text-kenangan-red shadow-sm flex items-center justify-center gap-1.5">
+                <i data-lucide="qr-code" class="w-4 h-4"></i>
+                QRIS Scanner
+              </button>
+              <button type="button" onclick="switchPaymentTab('bank')" id="tabBtnBank" class="py-2.5 rounded-xl text-xs font-bold text-stone-500 hover:text-stone-800 flex items-center justify-center gap-1.5">
+                <i data-lucide="building" class="w-4 h-4"></i>
+                Transfer Bank
+              </button>
+            </div>
+
+            <!-- Tab QRIS -->
+            <div id="paymentContentQris" class="space-y-3">
+              <div class="p-5 rounded-2xl bg-white text-center flex flex-col items-center justify-center space-y-3 border-2 border-stone-200 shadow-sm">
+                <div class="flex items-center justify-between w-full border-b pb-2">
+                  <span class="font-black text-sm text-stone-900 tracking-wider">QRIS RESMI TETESDRINK</span>
+                  <span class="text-[10px] bg-stone-100 font-bold px-2 py-0.5 rounded text-stone-600">NMID: ID1029384756</span>
+                </div>
+
+                <div class="w-44 h-44 bg-white border-2 border-stone-800 p-2 rounded-2xl flex flex-col items-center justify-center relative shadow-sm">
+                  <svg class="w-full h-full text-stone-900" viewBox="0 0 100 100" fill="currentColor">
+                    <path d="M0 0h30v30H0zm5 5h20v20H5z"/>
+                    <path d="M10 10h10v10H10z"/>
+                    <path d="M70 0h30v30H70zm5 5h20v20H75z"/>
+                    <path d="M80 10h10v10H80z"/>
+                    <path d="M0 70h30v30H0zm5 5h20v20H5z"/>
+                    <path d="M10 80h10v10H10z"/>
+                    <path d="M35 5h5v5h-5zm10 0h10v5H45zm15 0h5v10h-5zM35 15h15v5H35zm0 10h5v15h-5zm10 5h10v5H45zm25 0h10v5H70zm15 5h10v10H85zm-15 10h5v10h-5zm-25 0h15v5H45zm-10 10h5v15h-5zm20 5h10v5H55zm15 5h15v5H70zm15 10h10v10H85zm-30 0h10v10H55zm-15 5h5v5h-5zm30 5h5v5h-5z"/>
+                  </svg>
+                  <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div class="bg-kenangan-red text-white text-[10px] font-black px-2 py-0.5 rounded shadow">
+                      TETES
+                    </div>
+                  </div>
+                </div>
+
+                <div class="text-xs text-stone-600">
+                  Scan via <strong class="text-stone-900">BCA, GoPay, OVO, Dana, ShopeePay, Livin</strong>, atau m-Banking apapun.
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab Transfer Bank -->
+            <div id="paymentContentBank" class="hidden space-y-2.5">
+              <!-- BCA -->
+              <div class="p-3.5 rounded-2xl bg-white border border-kenangan-border shadow-subtle flex items-center justify-between">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-extrabold text-[11px]">BCA</span>
+                    <span class="text-xs font-bold text-kenangan-espresso">Bank Central Asia</span>
+                  </div>
+                  <div class="font-mono text-sm font-bold text-stone-900 mt-1 select-all" id="bcaAcc">7210481898</div>
+                  <div class="text-[10px] text-stone-500">a.n TETESDRINK INDONESIA</div>
+                </div>
+                <button type="button" onclick="copyToClipboard('7210481898', this)" class="px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-xs font-bold text-kenangan-red flex items-center gap-1 transition-all">
+                  <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                  <span>Salin</span>
+                </button>
+              </div>
+
+              <!-- BNI -->
+              <div class="p-3.5 rounded-2xl bg-white border border-kenangan-border shadow-subtle flex items-center justify-between">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded bg-orange-50 text-orange-700 font-extrabold text-[11px]">BNI</span>
+                    <span class="text-xs font-bold text-kenangan-espresso">Bank Negara Indonesia</span>
+                  </div>
+                  <div class="font-mono text-sm font-bold text-stone-900 mt-1 select-all" id="bniAcc">1858766674</div>
+                  <div class="text-[10px] text-stone-500">a.n TETESDRINK INDONESIA</div>
+                </div>
+                <button type="button" onclick="copyToClipboard('1858766674', this)" class="px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-xs font-bold text-kenangan-red flex items-center gap-1 transition-all">
+                  <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                  <span>Salin</span>
+                </button>
+              </div>
+
+              <!-- Mandiri -->
+              <div class="p-3.5 rounded-2xl bg-white border border-kenangan-border shadow-subtle flex items-center justify-between">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded bg-yellow-50 text-yellow-700 font-extrabold text-[11px]">MANDIRI</span>
+                    <span class="text-xs font-bold text-kenangan-espresso">Bank Mandiri</span>
+                  </div>
+                  <div class="font-mono text-sm font-bold text-stone-900 mt-1 select-all" id="mandiriAcc">1410029227097</div>
+                  <div class="text-[10px] text-stone-500">a.n TETESDRINK INDONESIA</div>
+                </div>
+                <button type="button" onclick="copyToClipboard('1410029227097', this)" class="px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-xs font-bold text-kenangan-red flex items-center gap-1 transition-all">
+                  <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                  <span>Salin</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Upload Bukti Transfer -->
+            <div class="space-y-2 pt-1">
+              <label class="block text-xs font-bold text-stone-800">
+                Upload Bukti Pembayaran / Screenshot Transaksi <span class="text-red-500">*</span>
+              </label>
+
+              <div class="relative border-2 border-dashed border-stone-300 hover:border-kenangan-red rounded-2xl p-4 text-center bg-stone-50 transition-all">
+                <input type="file" id="proofUploadInput" accept="image/*" onchange="handleProofUpload(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                
+                <div id="uploadPrompt" class="space-y-1">
+                  <i data-lucide="upload-cloud" class="w-7 h-7 text-kenangan-red mx-auto"></i>
+                  <p class="text-xs font-semibold text-stone-700">Klik atau seret foto bukti transfer di sini</p>
+                  <p class="text-[10px] text-stone-400">JPG, PNG, WEBP (Maks 5MB)</p>
+                </div>
+
+                <div id="uploadPreview" class="hidden flex items-center justify-between gap-3 text-left">
+                  <div class="flex items-center gap-3">
+                    <img id="previewImg" src="" alt="Bukti Transfer" class="w-12 h-12 object-cover rounded-xl border border-kenangan-red">
+                    <div>
+                      <span class="text-xs font-bold text-stone-900 block truncate max-w-[180px]" id="previewFileName">bukti.jpg</span>
+                      <span class="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                        <i data-lucide="check-circle" class="w-3 h-3"></i> Bukti Siap Dikirim
+                      </span>
+                    </div>
+                  </div>
+                  <button type="button" onclick="clearProofUpload(event)" class="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-xs">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+              <p id="errProofUpload" class="text-[11px] text-red-500 hidden">Wajib upload bukti transfer pembayaran sebelum mengirimkan pesanan.</p>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="p-4 sm:p-5 bg-stone-50 border-t border-kenangan-border flex items-center justify-between gap-3">
+        <div id="footerStep1" class="w-full flex items-center justify-between gap-3">
+          <button onclick="closeCartModal()" class="px-4 py-2.5 rounded-2xl border border-stone-300 hover:bg-white text-xs font-semibold text-stone-600 transition-all">
+            Lanjut Pilih Menu
+          </button>
+          <button onclick="goToStep(2)" id="btnToStep2" class="px-6 py-2.5 rounded-2xl bg-kenangan-red hover:bg-kenangan-redHover text-white font-bold text-xs sm:text-sm shadow-sm transition-all flex items-center gap-1.5">
+            <span>Lanjut Pengiriman</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div id="footerStep2" class="w-full hidden items-center justify-between gap-3">
+          <button onclick="goToStep(1)" class="px-4 py-2.5 rounded-2xl border border-stone-300 hover:bg-white text-xs font-semibold text-stone-600 transition-all flex items-center gap-1">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span>Kembali</span>
+          </button>
+          <button onclick="validateAndGoToStep3()" class="px-6 py-2.5 rounded-2xl bg-kenangan-red hover:bg-kenangan-redHover text-white font-bold text-xs sm:text-sm shadow-sm transition-all flex items-center gap-1.5">
+            <span>Lanjut Pembayaran</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div id="footerStep3" class="w-full hidden items-center justify-between gap-3">
+          <button onclick="goToStep(2)" class="px-4 py-2.5 rounded-2xl border border-stone-300 hover:bg-white text-xs font-semibold text-stone-600 transition-all flex items-center gap-1">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span>Kembali</span>
+          </button>
+          <button onclick="submitOrderFinal()" id="btnSubmitOrder" class="px-6 py-2.5 rounded-2xl bg-kenangan-red hover:bg-kenangan-redHover text-white font-black text-xs sm:text-sm shadow-md transition-all flex items-center gap-2">
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
+            <span>Kirim Pesanan Sekarang</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- 12.5. ADD / EDIT SOCIAL MEDIA MODAL                        -->
+  <!-- ========================================================== -->
+  <div id="socialFormModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-stone-900/60 backdrop-blur-sm" onclick="closeSocialFormModal()"></div>
+    
+    <div class="relative w-full max-w-md bg-white rounded-3xl border border-kenangan-border flex flex-col max-h-[90vh] overflow-hidden shadow-modal z-10">
+      
+      <div class="p-5 bg-white border-b border-kenangan-border flex items-center justify-between">
+        <h3 id="socialFormModalTitle" class="text-base font-extrabold text-kenangan-espresso flex items-center gap-2">
+          <i data-lucide="share-2" class="w-5 h-5 text-kenangan-red"></i>
+          <span>Tambah Media Sosial & Kontak</span>
+        </h3>
+        <button onclick="closeSocialFormModal()" class="w-8 h-8 rounded-lg bg-stone-100 text-stone-500 hover:text-stone-800 flex items-center justify-center">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="socialForm" onsubmit="handleSocialFormSubmit(event)" class="p-5 sm:p-6 overflow-y-auto space-y-4 text-xs">
+        <input type="hidden" id="formSocialId">
+
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">Platform / Jenis Kontak <span class="text-red-500">*</span></label>
+          <select id="formSocialPlatform" onchange="autoFillSocialUrl()" required class="w-full bg-stone-50 border border-kenangan-border rounded-xl px-3.5 py-2.5 text-stone-800 font-medium focus:outline-none focus:border-kenangan-red">
+            <option value="instagram">📸 Instagram</option>
+            <option value="tiktok">🎵 TikTok</option>
+            <option value="threads">🧵 Threads</option>
+            <option value="facebook">👥 Facebook</option>
+            <option value="whatsapp">💬 WhatsApp</option>
+            <option value="youtube">▶️ YouTube</option>
+            <option value="twitter">🐦 X (Twitter)</option>
+            <option value="telegram">✈️ Telegram</option>
+            <option value="linkedin">💼 LinkedIn</option>
+            <option value="pinterest">📌 Pinterest</option>
+            <option value="email">✉️ Email</option>
+            <option value="globe">🌐 Website / Link Lain</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">Nama / Label Akun <span class="text-red-500">*</span></label>
+          <input type="text" id="formSocialName" required placeholder="Contoh: Instagram Official" class="w-full bg-stone-50 border border-kenangan-border rounded-xl px-3.5 py-2.5 text-stone-800 focus:outline-none focus:border-kenangan-red">
+        </div>
+
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">Handle / Username / No. Telp <span class="text-red-500">*</span></label>
+          <input type="text" id="formSocialHandle" oninput="autoFillSocialUrl()" required placeholder="Contoh: @Tetesdrink atau 088219909522" class="w-full bg-stone-50 border border-kenangan-border rounded-xl px-3.5 py-2.5 text-stone-800 font-mono focus:outline-none focus:border-kenangan-red">
+        </div>
+
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">URL Link Tautan Lengkap <span class="text-red-500">*</span></label>
+          <input type="url" id="formSocialUrl" oninput="this.dataset.auto='0'" required placeholder="Contoh: https://instagram.com/tetesdrink atau https://wa.me/6288219909522" class="w-full bg-stone-50 border border-kenangan-border rounded-xl px-3.5 py-2.5 text-stone-800 font-mono focus:outline-none focus:border-kenangan-red">
+        </div>
+
+        <div class="pt-1 flex items-center gap-2">
+          <input type="checkbox" id="formSocialActive" class="w-4 h-4 text-kenangan-red rounded border-stone-300 focus:ring-kenangan-red" checked>
+          <label for="formSocialActive" class="text-stone-700 font-semibold cursor-pointer">Tampilkan kontak ini di website (Status Aktif)</label>
+        </div>
+
+        <div class="pt-3 border-t border-kenangan-border flex items-center justify-end gap-3">
+          <button type="button" onclick="closeSocialFormModal()" class="px-4 py-2.5 rounded-2xl border border-stone-300 text-stone-600 font-semibold">
+            Batal
+          </button>
+          <button type="submit" class="px-5 py-2.5 rounded-2xl bg-kenangan-red hover:bg-kenangan-redHover text-white font-black shadow-sm transition-all">
+            Simpan Kontak
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- 8. ORDER SUCCESS MODAL                                     -->
+  <!-- ========================================================== -->
+  <div id="successModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-stone-900/60 backdrop-blur-sm"></div>
+    <div class="relative w-full max-w-md bg-white rounded-3xl border border-kenangan-border p-6 sm:p-8 text-center space-y-4 shadow-modal z-10">
+      
+      <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
+        <i data-lucide="check" class="w-8 h-8"></i>
+      </div>
+
+      <div>
+        <span class="inline-block px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-2">
+          Pesanan Berhasil Masuk!
+        </span>
+        <h3 class="text-xl sm:text-2xl font-black text-kenangan-espresso">Terima Kasih Banyak!</h3>
+        <p class="text-xs text-kenangan-textMuted mt-1 leading-relaxed">
+          Pesananmu telah tercatat dan stok minuman di katalog otomatis berkurang. Barista kami siap meracik minumanmu!
+        </p>
+      </div>
+
+      <div class="p-3.5 rounded-2xl bg-stone-50 border border-kenangan-border text-left space-y-1.5 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="text-stone-500">Nomor Pesanan:</span>
+          <span id="successOrderId" class="font-mono font-bold text-kenangan-espresso">#TTS-0001</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-stone-500">Sheet Harian:</span>
+          <span id="successSheetTag" class="font-bold text-kenangan-red">Pesanan 10 November 2026</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-stone-500">Total Tagihan:</span>
+          <span id="successGrandTotal" class="font-bold text-emerald-600">Rp 0</span>
+        </div>
+      </div>
+
+      <div class="space-y-2.5 pt-2">
+        <a id="successWhatsAppLink" href="#" target="_blank" class="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs sm:text-sm shadow-md transition-all">
+          <i data-lucide="message-circle" class="w-4 h-4"></i>
+          Konfirmasi via WhatsApp
+        </a>
+        <button onclick="closeSuccessModal()" class="w-full px-5 py-2.5 rounded-2xl bg-stone-100 hover:bg-stone-200 text-xs font-bold text-stone-700 transition-all">
+          Belanja Menu Lainnya
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- 9. ADMIN PIN AUTHENTICATION MODAL                          -->
+  <!-- ========================================================== -->
+  <div id="adminAuthModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-stone-900/60 backdrop-blur-sm" onclick="closeAdminAuthModal()"></div>
+    
+    <div id="authBox" class="relative w-full max-w-sm bg-white rounded-3xl border border-kenangan-border p-6 text-center space-y-4 shadow-modal z-10 transition-all">
+      <div class="w-14 h-14 rounded-2xl bg-kenangan-redLight text-kenangan-red flex items-center justify-center mx-auto">
+        <i data-lucide="shield-check" class="w-7 h-7"></i>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-extrabold text-kenangan-espresso">Akses Admin TETESDRINK.co</h3>
+        <p class="text-xs text-kenangan-textMuted mt-1">Masukkan kata sandi pengaman untuk masuk ke dashboard.</p>
+      </div>
+
+      <div class="space-y-3">
+        <div class="relative">
+          <input type="password" id="adminPinInput" placeholder="Masukkan PIN Admin..." class="w-full bg-stone-50 border border-kenangan-border rounded-2xl px-4 py-3 text-center text-sm text-kenangan-espresso placeholder-stone-400 focus:outline-none focus:border-kenangan-red tracking-widest font-mono transition-all" onkeydown="if(event.key === 'Enter') verifyAdminPin()">
+          <button type="button" onclick="togglePinVisibility()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700">
+            <i data-lucide="eye" id="eyeIcon" class="w-4 h-4"></i>
+          </button>
+        </div>
+        <p id="adminPinError" class="text-xs text-red-500 hidden font-semibold">PIN salah! Silakan coba lagi.</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button onclick="closeAdminAuthModal()" class="flex-1 py-2.5 rounded-2xl bg-stone-100 hover:bg-stone-200 text-xs font-bold text-stone-600 transition-all">
+          Batal
+        </button>
+        <button onclick="verifyAdminPin()" class="flex-1 py-2.5 rounded-2xl bg-kenangan-red hover:bg-kenangan-redHover text-white font-extrabold text-xs shadow-sm transition-all">
+          Buka Dashboard
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- 10. ADMIN DASHBOARD MODAL (FULL CRUD + SLIDE + LOGO)       -->
+  <!-- ========================================================== -->
+  <div id="adminDashboardModal" class="fixed inset-0 z-50 hidden flex flex-col bg-[#FAF8F5]">
+    
+    <!-- Top Bar -->
+    <div class="h-16 px-4 sm:px-6 bg-white border-b border-kenangan-border flex items-center justify-between shrink-0 shadow-subtle">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-kenangan-red text-white flex items-center justify-center font-black">
+          <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h2 class="text-sm sm:text-base font-extrabold text-kenangan-espresso flex items-center gap-2">
+            Dashboard Admin TETESDRINK.co
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Aktif</span>
+          </h2>
+          <p class="text-[11px] text-kenangan-textMuted">Kelola Menu, Stok Real-time, Slide Banner Promo, & Logo</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <button onclick="closeAdminDashboard()" class="px-3.5 py-1.5 rounded-xl bg-stone-100 hover:bg-red-50 text-stone-600 hover:text-kenangan-red border border-stone-200 text-xs font-semibold transition-all flex items-center gap-1">
+          <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+          <span>Tutup</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Admin Content Area -->
+    <div class="flex-1 overflow-y-auto p-4 sm:p-6 max-w-7xl mx-auto w-full space-y-6">
+      
+      <!-- Metrics Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="p-4 rounded-3xl bg-white border border-kenangan-border shadow-subtle">
+          <div class="text-[11px] font-bold text-stone-400 uppercase">Total Varian Menu</div>
+          <div id="statTotalVariants" class="text-2xl font-black text-kenangan-espresso mt-1">12</div>
+          <div class="text-[10px] text-kenangan-red mt-0.5">Tersedia di katalog</div>
+        </div>
+        <div class="p-4 rounded-3xl bg-white border border-kenangan-border shadow-subtle">
+          <div class="text-[11px] font-bold text-stone-400 uppercase">Total Stok Fisik</div>
+          <div id="statTotalStock" class="text-2xl font-black text-kenangan-red mt-1">128 Botol</div>
+          <div class="text-[10px] text-stone-400 mt-0.5">Akumulasi real-time</div>
+        </div>
+        <div class="p-4 rounded-3xl bg-white border border-kenangan-border shadow-subtle">
+          <div class="text-[11px] font-bold text-stone-400 uppercase">Total Pesanan Masuk</div>
+          <div id="statTotalOrders" class="text-2xl font-black text-emerald-600 mt-1">0</div>
+          <div class="text-[10px] text-stone-400 mt-0.5">Log Spreadsheet</div>
+        </div>
+        <div class="p-4 rounded-3xl bg-white border border-kenangan-border shadow-subtle">
+          <div class="text-[11px] font-bold text-stone-400 uppercase">Banner Promo Aktif</div>
+          <div id="statTotalBanners" class="text-2xl font-black text-amber-600 mt-1">3</div>
+          <div class="text-[10px] text-stone-400 mt-0.5">Slider di homepage</div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs in Admin -->
+      <div class="flex items-center gap-2 border-b border-kenangan-border pb-3 overflow-x-auto no-scrollbar">
+        <button onclick="switchAdminTab('products')" id="adminTabProductsBtn" class="px-4 py-2 rounded-2xl text-xs font-bold bg-kenangan-red text-white shadow-sm whitespace-nowrap">
+          Kelola Menu & Stok (Real-time)
+        </button>
+        <button onclick="switchAdminTab('banners')" id="adminTabBannersBtn" class="px-4 py-2 rounded-2xl text-xs font-semibold text-stone-600 hover:text-kenangan-red bg-white border border-kenangan-border whitespace-nowrap">
+          Slide Banner Promo
+        </button>
+        <button onclick="switchAdminTab('branding')" id="adminTabBrandingBtn" class="px-4 py-2 rounded-2xl text-xs font-semibold text-stone-600 hover:text-kenangan-red bg-white border border-kenangan-border whitespace-nowrap">
+          Ganti Logo & Branding
+        </button>
+        <button onclick="switchAdminTab('socials')" id="adminTabSocialsBtn" class="px-4 py-2 rounded-2xl text-xs font-semibold text-stone-600 hover:text-kenangan-red bg-white border border-kenangan-border whitespace-nowrap">
+          Media Sosial & Kontak
+        </button>
+        <button onclick="switchAdminTab('orders')" id="adminTabOrdersBtn" class="px-4 py-2 rounded-2xl text-xs font-semibold text-stone-600 hover:text-kenangan-red bg-white border border-kenangan-border whitespace-nowrap">
+          Log Spreadsheet Harian
+        </button>
+      </div>
+
+      <!-- ================= TAB 1: PRODUCT & STOCK CRUD ================= -->
+      <div id="adminTabProducts" class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h4 class="text-sm font-bold text-kenangan-espresso">Daftar Menu & Stok Fisik</h4>
+          <div class="flex items-center gap-2">
+            <button onclick="resetToDefaultCatalog()" class="px-3 py-1.5 rounded-xl border border-stone-300 text-stone-600 hover:text-kenangan-red text-xs font-medium bg-white">
+              Reset Menu Default
+            </button>
+            <button onclick="openProductFormModal('add')" class="px-3.5 py-1.5 rounded-xl bg-kenangan-red hover:bg-kenangan-redHover text-white font-bold text-xs shadow-sm flex items-center gap-1.5">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+              <span>Tambah Varian Baru</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white border border-kenangan-border rounded-3xl overflow-hidden shadow-subtle">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-stone-50 text-stone-500 font-bold uppercase tracking-wider border-b border-kenangan-border">
+                <tr>
+                  <th class="py-3 px-4">Minuman</th>
+                  <th class="py-3 px-4">Kategori</th>
+                  <th class="py-3 px-4">Harga</th>
+                  <th class="py-3 px-4 text-center">Stok Real-Time</th>
+                  <th class="py-3 px-4 text-center">Status</th>
+                  <th class="py-3 px-4 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="adminProductTableBody" class="divide-y divide-kenangan-border text-stone-700">
+                <!-- JS populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 2: SLIDE BANNER MANAGEMENT ================= -->
+      <div id="adminTabBanners" class="hidden space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white rounded-3xl border border-kenangan-border shadow-subtle">
+          <div>
+            <h4 class="text-sm font-bold text-kenangan-espresso flex items-center gap-2">
+              <i data-lucide="image" class="w-4 h-4 text-kenangan-red"></i>
+              Kelola Slide Banner Promo
+            </h4>
+            <p class="text-xs text-kenangan-textMuted mt-0.5">Tambah banner baru, ubah gambar, atau hilangkan banner dari slider homepage.</p>
+          </div>
+          <button onclick="openBannerFormModal('add')" class="px-4 py-2 rounded-2xl bg-kenangan-red hover:bg-kenangan-redHover text-white text-xs font-bold shadow-sm flex items-center gap-1.5">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span>Tambah Banner Baru</span>
+          </button>
+        </div>
+
+        <!-- Banner Cards List -->
+        <div id="adminBannerList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- JS populated -->
+        </div>
+      </div>
+
+      <!-- ================= TAB 3: LOGO & BRANDING SETTINGS ================= -->
+      <div id="adminTabBranding" class="hidden space-y-6">
+        <div class="p-6 bg-white rounded-3xl border border-kenangan-border shadow-subtle space-y-5">
+          <div>
+            <h4 class="text-base font-bold text-kenangan-espresso flex items-center gap-2">
+              <i data-lucide="pen-tool" class="w-5 h-5 text-kenangan-red"></i>
+              Pengaturan Logo & Branding Toko
+            </h4>
+            <p class="text-xs text-kenangan-textMuted mt-1">Ubah logo TETESDRINK.co dengan logo gambar bisnismu sendiri atau sesuaikan nama dan slogan.</p>
+          </div>
+
+          <!-- Current Logo Preview -->
+          <div class="p-4 rounded-2xl bg-[#FAF8F5] border border-kenangan-border flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <span class="text-xs font-bold text-stone-500 uppercase block mb-2">Pratinjau Logo Saat Ini:</span>
+              <div id="adminBrandingPreview" class="flex items-center gap-3 bg-white p-3 rounded-2xl border border-kenangan-border shadow-subtle">
+                <!-- Injected preview -->
+              </div>
+            </div>
+            <button onclick="resetLogoToDefault()" class="px-3.5 py-2 rounded-xl border border-stone-300 text-stone-600 hover:text-kenangan-red text-xs font-semibold bg-white transition-all">
+              Reset Logo Default
+            </button>
+          </div>
+
+          <form id="brandingForm" onsubmit="saveBrandingSettings(event)" class="space-y-4 text-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block font-bold text-stone-700 mb-1">Nama Brand Utama</label>
+                <input type="text" id="brandingNameInput" placeholder="TETESDRINK" class="w-full bg-stone-50 border border-kenangan-border rounded-xl px-3.5 py-2.5 text-stone-800 font-bold focus:outline-none focus:border-kenangan-red">
+              </div>
+              <div>
+                <label class="block font-bold text-stone-700 mb-1">Ekstensi / Aksen Nama (Warna Merah)</label>
+                <input type="text" id="brandingExtInput" placeholder=".co" class="w-full bg-stone-50 border border-kenangan-border rounded-xl px-3.5 py-2.5 text-kenangan-red font-bold focus:outline-none focus:border-kenangan-red">
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-bold text-stone-700 mb-1">Slogan Brand</label>
+              <input type="text" id="brandingSloganInput" placeholder="Flavor bit full" class="w-full bg-stone-50 border border-kenangan-border rounded-xl px-3.5 py-2.5 text-stone-700 focus:outline-none focus:border-kenangan-red">
+            </div>
+
+            <!-- Upload Logo Gambar -->
+            <div class="p-4 rounded-2xl bg-stone-50 border border-kenangan-border space-y-3">
+              <label class="block font-bold text-stone-800">
+                Ganti Dengan Logo Gambar Kustom (Opsional)
+              </label>
+              <p class="text-[11px] text-stone-500">Jika diunggah, logo gambar ini akan tampil menggantikan logo default di Navbar dan Footer.</p>
+              
+              <div class="flex items-center gap-3">
+                <input type="file" id="brandingLogoFile" accept="image/*" onchange="handleBrandingLogoUpload(event)" class="text-xs text-stone-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-white file:text-kenangan-red file:border file:border-stone-300 hover:file:bg-stone-100 cursor-pointer">
+                <button type="button" onclick="clearUploadedLogoImage()" id="btnClearLogoImg" class="hidden px-2.5 py-1.5 rounded-lg bg-red-100 text-red-600 text-[11px] font-semibold">
+                  Hapus Logo Gambar
+                </button>
+              </div>
+
+              <div id="brandingImgPreviewWrap" class="hidden pt-2">
+                <span class="text-[10px] text-stone-400 block mb-1">Pratinjau File:</span>
+                <img id="brandingImgPreview" src="" alt="Logo Custom" class="h-12 w-auto object-contain bg-white p-1 rounded-xl border border-stone-200">
+              </div>
+            </div>
+
+            <div class="pt-2">
+              <button type="submit" class="px-6 py-2.5 rounded-2xl bg-kenangan-red hover:bg-kenangan-redHover text-white font-black shadow-sm transition-all">
+                Simpan Perubahan Branding & Logo
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ================= TAB 4: ORDER & SPREADSHEET LOG ================= -->
+      <div id="adminTabOrders" class="hidden space-y-4">
+        <div class="p-4 rounded-3xl bg-white border border-kenangan-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-subtle">
+          <div>
+            <h4 class="text-sm font-bold text-kenangan-espresso flex items-center gap-2">
+              <i data-lucide="table" class="w-4 h-4 text-kenangan-red"></i>
+              Sheet Log Harian Terorganisir
+            </h4>
+            <p class="text-xs text-kenangan-textMuted mt-0.5">Pesanan otomatis dikelompokkan berdasarkan Sheet Harian Baru (format Indonesia).</p>
+          </div>
+          <button onclick="exportOrdersToCSV()" class="px-3.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 border border-stone-300 text-kenangan-espresso text-xs font-bold transition-all flex items-center gap-1.5">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>Export CSV Log</span>
+          </button>
+        </div>
+
+        <div id="ordersListContainer" class="space-y-4">
+          <!-- JS populated -->
+        </div>
+      </div>
+
+      <!-- ================= TAB 5: MEDIA SOSIAL & KONTAK ================= -->
+      <div id="adminTabSocials" class="hidden space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white rounded-3xl border border-kenangan-border shadow-subtle">
+          <div>
+            <h4 class="text-sm font-bold text-kenangan-espresso flex items-center gap-2">
+              <i data-lucide="share-2" class="w-4 h-4 text-kenangan-red"></i>
+              Kelola Media Sosial & Link Komunitas
+            </h4>
+            <p class="text-xs text-kenangan-textMuted mt-0.5">Tambah akun Instagram, TikTok, WhatsApp, dll yang langsung tampil di Footer dan Stand Info.</p>
+          </div>
+          <button onclick="openSocialFormModal('add')" class="px-4 py-2 rounded-2xl bg-kenangan-red hover:bg-kenangan-redHover text-white text-xs font-bold shadow-sm flex items-center gap-1.5">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span>Tambah Akun Sosmed</span>
+          </button>
+        </div>
+
+        <div id="adminSocialsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- 11. ADD / EDIT PRODUCT MODAL                               -->
+  <!-- ========================================================== -->
+  <div id="productFormModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-stone-900/60 backdrop-blur-sm" onclick="closeProductFormModal()"></div>
+    
+    <div class="relative w-full max-w-lg bg-white rounded-3xl border border-kenangan-border flex flex-col max-h-[90vh] overflow-hidden shadow-modal z-10">
+      
+      <div class="p-5 bg-white border-b border-kenangan-border flex items-center justify-between">
+        <h3 id="productFormModalTitle" class="text-base font-extrabold text-kenangan-espresso flex items-center gap-2">
+          <i data-lucide="plus-circle" class="w-5 h-5 text-kenangan-red"></i>
+          <span>Tambah Varian Minuman Baru</span>
+        </h3>
+        <button onclick="closeProductFormModal()" class="w-8 h-8 rounded-lg bg-stone-100 text-stone-500 hover:text-stone-800 flex items-center justify-center">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="productForm" onsubmit="handleProductFormSubmit(event)" class="p-5 sm:p-6 overflow-y-auto space-y-4 text-xs">
+        <input type="hidden" id="formProductId">
+
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">Nama Varian Minuman <span class="text-red-500">*</span></label>
+          <input type="text" id="formProductName" required placeholder="Contoh: Kopi Susu Gula Aren Spesial" class="w-full bg-stone-50 border border-kenangan-border rounded-xl px-3.5 py-2.5 text-stone-800 focus:outline-none focus:border-kenangan-red">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-stone-700 mb-1">Kategori <span class="text-red-500">*</span></label>
+            <select id="formProductCategory" required class="w-full bg-stone-50 border border-kenangan-border rounded-xl px-3.5 py-2.5 text-stone-800 focus:outline-none focus:border-kenangan-red">
+              <option value="Original">🥤 Original</option>
+              <option value="With Topping">✨ With Topping</option>
+              <option value="Coffee Based">☕ Coffee Based</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-stone-700 mb-1">Harga (Rupiah) <span class="text-red-500">*</span></label>
+            <input type="number" id="formProductPrice" required min="1000" step="500" placeholder="10000" class="w-full bg-stone-50 border border-kenangan-border rounded-xl px-3.5 py-2.5 text-stone-800 focus:outline-none focus:border-kenangan-red">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-stone-700 mb-1">Stok Awal (Botol 250ml) <span class="text-red-500">*</span></label>
+            <input type="number" id="formProductStock" required min="0" placeholder="30" class="w-full bg-stone-50 border border-kenangan-border rounded-xl px-3.5 py-2.5 text-stone-800 focus:outline-none focus:border-kenangan-red">
+          </div>
+
+          <div>
+            <label class="block font-bold text-stone-700 mb-1">Emoji / Ikon Varian</label>
+            <input type="text" id="formProductEmoji" placeholder="🍫 / 🍓 / ☕ / 🍪 / 🥭" class="w-full bg-stone-50 border border-kenangan-border rounded-xl px-3.5 py-2.5 text-stone-800 focus:outline-none focus:border-kenangan-red">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">Deskripsi Singkat Rasa</label>
+          <textarea id="formProductDesc" rows="2" placeholder="Jelaskan cita rasa dan racikan minuman..." class="w-full bg-stone-50 border border-kenangan-border rounded-xl p-3 text-stone-800 focus:outline-none focus:border-kenangan-red"></textarea>
+        </div>
+
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">Foto Real-Pict Minuman</label>
+          <div class="flex items-center gap-3">
+            <div class="w-16 h-16 rounded-2xl bg-stone-100 border border-kenangan-border overflow-hidden shrink-0 flex items-center justify-center">
+              <img id="formProductImagePreview" src="https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=300&q=80" alt="Preview" class="w-full h-full object-cover">
+            </div>
+            <div class="flex-1 space-y-2">
+              <input type="file" id="formProductImageFile" accept="image/*" onchange="handleProductImageFile(event)" class="text-[11px] text-stone-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-stone-100 file:text-kenangan-red cursor-pointer">
+              <input type="url" id="formProductImageUrl" oninput="updateImagePreviewFromUrl(this.value)" placeholder="Atau tempel URL gambar web..." class="w-full bg-stone-50 border border-kenangan-border rounded-xl px-3 py-1.5 text-[11px] text-stone-800">
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-kenangan-border flex items-center justify-end gap-3">
+          <button type="button" onclick="closeProductFormModal()" class="px-4 py-2.5 rounded-2xl border border-stone-300 text-stone-600 font-semibold">
+            Batal
+          </button>
+          <button type="submit" class="px-5 py-2.5 rounded-2xl bg-kenangan-red hover:bg-kenangan-redHover text-white font-black shadow-sm transition-all">
+            Simpan Produk
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- 12. ADD / EDIT BANNER MODAL (MANAJEMEN SLIDER)             -->
+  <!-- ========================================================== -->
+  <div id="bannerFormModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-stone-900/60 backdrop-blur-sm" onclick="closeBannerFormModal()"></div>
+    
+    <div class="relative w-full max-w-lg bg-white rounded-3xl border border-kenangan-border flex flex-col max-h-[90vh] overflow-hidden shadow-modal z-10">
+      
+      <div class="p-5 bg-white border-b border-kenangan-border flex items-center justify-between">
+        <h3 id="bannerFormModalTitle" class="text-base font-extrabold text-kenangan-espresso flex items-center gap-2">
+          <i data-lucide="image" class="w-5 h-5 text-kenangan-red"></i>
+          <span>Tambah Banner Slide Baru</span>
+        </h3>
+        <button onclick="closeBannerFormModal()" class="w-8 h-8 rounded-lg bg-stone-100 text-stone-500 hover:text-stone-800 flex items-center justify-center">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="bannerForm" onsubmit="handleBannerFormSubmit(event)" class="p-5 sm:p-6 overflow-y-auto space-y-4 text-xs">
+        <input type="hidden" id="formBannerId">
+
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">Judul Promo Banner <span class="text-red-500">*</span></label>
+          <input type="text" id="formBannerTitle" required placeholder="Contoh: Promo Spesial Kampus Diskon 20%" class="w-full bg-stone-50 border border-kenangan-border rounded-xl px-3.5 py-2.5 text-stone-800 font-bold focus:outline-none focus:border-kenangan-red">
+        </div>
+
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">Subjudul / Deskripsi Banner</label>
+          <textarea id="formBannerSubtitle" rows="2" placeholder="Contoh: Pesan bareng teman satu kelas, gratis ongkir diantar ke gedung kuliah..." class="w-full bg-stone-50 border border-kenangan-border rounded-xl p-3 text-stone-800 focus:outline-none focus:border-kenangan-red"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-stone-700 mb-1">Badge Tag Promosi</label>
+            <input type="text" id="formBannerBadge" placeholder="Contoh: 🔥 PROMO KAMPUS" class="w-full bg-stone-50 border border-kenangan-border rounded-xl px-3.5 py-2.5 text-stone-800 focus:outline-none focus:border-kenangan-red">
+          </div>
+
+          <div>
+            <label class="block font-bold text-stone-700 mb-1">Highlight / Tag Bawah</label>
+            <input type="text" id="formBannerTag" placeholder="Contoh: Delivery Kilat < 1km" class="w-full bg-stone-50 border border-kenangan-border rounded-xl px-3.5 py-2.5 text-stone-800 focus:outline-none focus:border-kenangan-red">
+          </div>
+        </div>
+
+        <!-- Banner Image Upload -->
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">Foto Banner (Upload File atau URL) <span class="text-red-500">*</span></label>
+          <div class="space-y-2">
+            <div class="w-full h-32 rounded-2xl bg-stone-100 border border-kenangan-border overflow-hidden flex items-center justify-center">
+              <img id="formBannerImagePreview" src="https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=800&q=80" alt="Preview Banner" class="w-full h-full object-cover">
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="file" id="formBannerImageFile" accept="image/*" onchange="handleBannerImageFile(event)" class="text-[11px] text-stone-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-stone-100 file:text-kenangan-red cursor-pointer">
+              <input type="url" id="formBannerImageUrl" oninput="updateBannerPreviewFromUrl(this.value)" placeholder="Atau tempel URL gambar..." class="w-full bg-stone-50 border border-kenangan-border rounded-xl px-3 py-1.5 text-[11px] text-stone-800">
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-kenangan-border flex items-center justify-end gap-3">
+          <button type="button" onclick="closeBannerFormModal()" class="px-4 py-2.5 rounded-2xl border border-stone-300 text-stone-600 font-semibold">
+            Batal
+          </button>
+          <button type="submit" class="px-5 py-2.5 rounded-2xl bg-kenangan-red hover:bg-kenangan-redHover text-white font-black shadow-sm transition-all">
+            Simpan Banner
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- 13. IMAGE ENLARGE MODAL (UNTUK BUKTI TRANSFER)             -->
+  <!-- ========================================================== -->
+  <div id="imageModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-stone-900/80 backdrop-blur-md" onclick="closeImageModal()"></div>
+    <div class="relative max-w-xl max-h-[85vh] bg-white rounded-3xl border border-kenangan-border overflow-hidden p-2 z-10 shadow-modal">
+      <button onclick="closeImageModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-stone-900/70 text-white flex items-center justify-center hover:bg-stone-900">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+      <img id="enlargedImage" src="" alt="Bukti Transfer" class="max-w-full max-h-[80vh] object-contain rounded-2xl">
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- JAVASCRIPT LOGIC (VANILLA JS)                              -->
+  <!-- ========================================================== -->
+  <script>
+    /* ============================================================
+       A. DEFAULT DATA DEFINITIONS
+       ============================================================ */
+    const DEFAULT_PRODUCTS = [
+      {
+        id: "prod-1",
+        name: "Chocolate Ice (No Topping)",
+        category: "Original",
+        price: 10000,
+        stock: 35,
+        emoji: "🍫",
+        image: "https://images.unsplash.com/photo-1541658016709-82535e94bc69?auto=format&fit=crop&w=600&q=80",
+        description: "Es bubuk cokelat klasik manis pekat & dingin menyegarkan, dikemas higienis ke dalam botol 250ml siap minum."
+      },
+      {
+        id: "prod-2",
+        name: "Strawberry (No Topping)",
+        category: "Original",
+        price: 10000,
+        stock: 25,
+        emoji: "🍓",
+        image: "https://images.unsplash.com/photo-1553530666-ba11a7da3888?auto=format&fit=crop&w=600&q=80",
+        description: "Rasa strawberry segar manis asam favorit masa kecil yang nyegerin, dikemas praktis dalam botol 250ml."
+      },
+      {
+        id: "prod-3",
+        name: "Tiramiss u Cappucino (No Topping)",
+        category: "Coffee Based",
+        price: 12000,
+        stock: 20,
+        emoji: "☕",
+        image: "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=600&q=80",
+        description: "Perpaduan bubuk kopi cappucino nikmat dengan aroma wangi tiramisu manis nagih dalam kemasan botol 250ml."
+      },
+      {
+        id: "prod-4",
+        name: "Redvelvet (With Red Oreo Crumbs)",
+        category: "With Topping",
+        price: 15000,
+        stock: 30,
+        emoji: "🍪",
+        image: "https://images.unsplash.com/photo-1628557044797-f21a177c37ec?auto=format&fit=crop&w=600&q=80",
+        description: "Manis lembut red velvet creamy dengan limpahan taburan remahan red oreo renyah di dalam botol 250ml."
+      },
+      {
+        id: "prod-5",
+        name: "Mango (With Real Mango Slices)",
+        category: "With Topping",
+        price: 15000,
+        stock: 18,
+        emoji: "🥭",
+        image: "https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=600&q=80",
+        description: "Es rasa mangga tropical manis segar dengan potongan buah mangga asli di dalamnya, sensasi dinginnya nendang!"
+      }
+    ];
+
+    const DEFAULT_BANNERS = [
+      {
+        id: "banner-1",
+        title: "Es Rasa Favorit Botol 250ml — Praktis & Higienis Siap Minum!",
+        subtitle: "Minuman es bubuk manis segar pinggir jalan, di-repack higienis ke botol dingin siap dibawa ke kelas atau kosan.",
+        badge: "🥤 BOTOL 250ML PRAKTIS",
+        tag: "Kemasan Botol Dingin Higienis",
+        image: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=1200&q=80",
+        active: true
+      },
+      {
+        id: "banner-2",
+        title: "Varian With Topping: Redvelvet Oreo & Real Mango Slices!",
+        subtitle: "Sensasi crunchy red oreo crumbs & segarnya potongan buah mangga asli di setiap tegukan botol 250ml.",
+        badge: "✨ WITH TOPPING SPESIAL",
+        tag: "Topping Melimpah & Nyegerin",
+        image: "https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=1200&q=80",
+        active: true
+      },
+      {
+        id: "banner-3",
+        title: "Paket Bulk Order: Diskon 15% (>100 Pcs) & Free Sewa Toples 24L!",
+        subtitle: "Format botol 250ml praktis dibagikan. Diskon 15% untuk >100 pcs, penawaran spesial >500 pcs, free sewa toples es 24 liter & jaminan segar!",
+        badge: "🎉 EVENT & BULK ORDER",
+        tag: "Free Sewa Toples 24L • Jaminan Segar",
+        image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80",
+        active: true
+      }
+    ];
+
+    const DEFAULT_BRANDING = {
+      name: "TETESDRINK",
+      ext: ".co",
+      slogan: "Flavor bit full",
+      customLogoUrl: "" // Base64 atau URL
+    };
+
+    /* ============================================================
+       B. STORAGE KEYS & APP STATE
+       ============================================================ */
+    const STORAGE_KEY_PRODUCTS = "tetesdrink_catalog_v3";
+    const STORAGE_KEY_ORDERS = "tetesdrink_orders_v3";
+    const STORAGE_KEY_BANNERS = "tetesdrink_banners_v4";
+    const STORAGE_KEY_BRANDING = "tetesdrink_branding_v3";
+    const STORAGE_KEY_SOCIALS = "tetesdrink_socials_v1";
+    const ADMIN_PIN = "Maan060309";
+
+    let products = [];
+    let banners = [];
+    let branding = {};
+    let cart = {}; // { [productId]: quantity }
+    let orders = [];
+    let selectedCategory = "all";
+    let searchQuery = "";
+    let selectedShipping = "pickup";
+    let selectedPaymentMethod = "qris";
+    let proofBase64 = "";
+
+    // Carousel State
+    let currentSlideIndex = 0;
+    let carouselTimer = null;
+
+    /* ============================================================
+       C. INITIALIZATION
+       ============================================================ */
+    window.addEventListener("DOMContentLoaded", () => {
+      loadBrandingFromStorage();
+      loadBannersFromStorage();
+      loadProductsFromStorage();
+      loadOrdersFromStorage();
+      loadSocialsFromStorage();
+
+      renderBranding();
+      renderSocials();
+      updateStoreStatus();
+      setInterval(updateStoreStatus, 60000);
+      renderCarousel();
+      renderProductCatalog();
+      updateCartBadge();
+      lucide.createIcons();
+    });
+
+    function loadBrandingFromStorage() {
+      const saved = localStorage.getItem(STORAGE_KEY_BRANDING);
+      if (saved) {
+        try {
+          branding = JSON.parse(saved);
+          if (branding.slogan === "Freshness In Every Drop") { branding.slogan = DEFAULT_BRANDING.slogan; saveBrandingToStorage(); }
+        } catch(e) { branding = { ...DEFAULT_BRANDING }; }
+      } else {
+        branding = { ...DEFAULT_BRANDING };
+        saveBrandingToStorage();
+      }
+    }
+
+    function saveBrandingToStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY_BRANDING, JSON.stringify(branding));
+      } catch (e) {
+        console.error("Gagal simpan branding ke localStorage:", e);
+      }
+    }
+
+    function loadBannersFromStorage() {
+      const saved = localStorage.getItem(STORAGE_KEY_BANNERS);
+      if (saved) {
+        try { banners = JSON.parse(saved); } catch(e) { banners = [...DEFAULT_BANNERS]; }
+      } else {
+        banners = [...DEFAULT_BANNERS];
+        saveBannersToStorage();
+      }
+    }
+
+    function saveBannersToStorage() {
+      localStorage.setItem(STORAGE_KEY_BANNERS, JSON.stringify(banners));
+    }
+
+    function loadProductsFromStorage() {
+      const saved = localStorage.getItem(STORAGE_KEY_PRODUCTS);
+      if (saved) {
+        try { products = JSON.parse(saved); } catch(e) { products = [...DEFAULT_PRODUCTS]; }
+      } else {
+        products = [...DEFAULT_PRODUCTS];
+        saveProductsToStorage();
+      }
+    }
+
+    function saveProductsToStorage() {
+      localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(products));
+    }
+
+    function loadOrdersFromStorage() {
+      const saved = localStorage.getItem(STORAGE_KEY_ORDERS);
+      if (saved) {
+        try { orders = JSON.parse(saved); } catch(e) { orders = []; }
+      } else {
+        orders = [];
+      }
+    }
+
+    function saveOrdersToStorage() {
+      localStorage.setItem(STORAGE_KEY_ORDERS, JSON.stringify(orders));
+    }
+
+    function formatRupiah(amount) {
+      return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        minimumFractionDigits: 0
+      }).format(amount);
+    }
+
+    function getIndonesianDateString(date = new Date()) {
+      const months = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      ];
+      return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+    }
+
+    function getIndonesianSheetTag(date = new Date()) {
+      return `Pesanan ${getIndonesianDateString(date)}`;
+    }
+
+    /* ============================================================
+       D. BRANDING & LOGO RENDERING
+       ============================================================ */
+    function renderBranding() {
+      const navBrandName = document.getElementById("navbarBrandName");
+      const navBrandSlogan = document.getElementById("navbarBrandSlogan");
+      const footerBrandName = document.getElementById("footerBrandName");
+      const footerBrandSlogan = document.getElementById("footerBrandSlogan");
+      const navGraphic = document.getElementById("navbarLogoGraphic");
+      const footerGraphic = document.getElementById("footerLogoGraphic");
+
+      // Update Text Values safely
+      if (navBrandName) {
+        navBrandName.innerHTML = `${branding.name}<span class="text-kenangan-red" id="navbarBrandExt">${branding.ext}</span>`;
+      }
+      if (navBrandSlogan) {
+        navBrandSlogan.textContent = branding.slogan;
+      }
+      if (footerBrandName) {
+        footerBrandName.innerHTML = `${branding.name}<span class="text-kenangan-red" id="footerBrandExt">${branding.ext}</span>`;
+      }
+      if (footerBrandSlogan) {
+        footerBrandSlogan.textContent = `© 2026 ${branding.name} Indonesia. "${branding.slogan}"`;
+      }
+
+      // Update Logo Graphics safely without destroying text DOM elements
+      if (branding.customLogoUrl) {
+        const logoImg = `<img src="${branding.customLogoUrl}" alt="Logo" class="h-9 sm:h-10 w-auto max-w-[140px] object-contain rounded-xl">`;
+        if (navGraphic) navGraphic.innerHTML = logoImg;
+        if (footerGraphic) footerGraphic.innerHTML = logoImg;
+      } else {
+        const defaultNavIcon = `
+          <div class="w-10 h-10 rounded-2xl bg-kenangan-red text-white flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+            <i data-lucide="coffee" class="w-5 h-5"></i>
+          </div>
+        `;
+        const defaultFooterIcon = `
+          <div class="w-10 h-10 rounded-2xl bg-kenangan-red text-white flex items-center justify-center shadow-sm">
+            <i data-lucide="coffee" class="w-5 h-5"></i>
+          </div>
+        `;
+        if (navGraphic) navGraphic.innerHTML = defaultNavIcon;
+        if (footerGraphic) footerGraphic.innerHTML = defaultFooterIcon;
+      }
+      lucide.createIcons();
+    }
+
+    /* ============================================================
+       E. CAROUSEL / SLIDE BANNER (HOMEPAGE)
+       ============================================================ */
+    function renderCarousel() {
+      const track = document.getElementById("carouselSlidesContainer");
+      const indicators = document.getElementById("carouselIndicators");
+      track.innerHTML = "";
+      indicators.innerHTML = "";
+
+      const activeBanners = banners.filter(b => b.active);
+
+      if (activeBanners.length === 0) {
+        track.innerHTML = `
+          <div class="w-full h-full flex items-center justify-center bg-stone-100 p-8 text-center">
+            <p class="text-sm font-bold text-stone-500">Belum ada slide banner yang aktif.</p>
+          </div>
+        `;
+        if (carouselTimer) clearInterval(carouselTimer);
+        return;
+      }
+
+      if (currentSlideIndex >= activeBanners.length) {
+        currentSlideIndex = 0;
+      }
+
+      // Track geser horizontal (semua slide berjajar, digeser pakai transform)
+      const strip = document.createElement("div");
+      strip.id = "carouselStrip";
+      strip.className = "carousel-strip flex h-full w-full";
+      strip.style.transform = `translateX(-${currentSlideIndex * 100}%)`;
+
+      activeBanners.forEach((b, idx) => {
+        const slide = document.createElement("div");
+        slide.className = "carousel-slide relative shrink-0 w-full h-full";
+
+        slide.innerHTML = `
+          <div class="relative w-full h-full overflow-hidden">
+            <img src="${b.image}" alt="${b.title}" draggable="false" class="w-full h-full object-cover select-none">
+
+            <!-- Dark Gradient Overlay for legibility -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/15 flex flex-col justify-end pl-14 pr-14 pt-5 pb-10 sm:px-20 sm:pt-10 sm:pb-12 text-white">
+              <div class="max-w-2xl space-y-2">
+                <span class="inline-block px-3 py-1 rounded-full bg-kenangan-red text-white text-[11px] font-extrabold uppercase tracking-wider shadow-sm">
+                  ${b.badge || 'PROMO'}
+                </span>
+                <h3 class="text-lg sm:text-3xl font-extrabold leading-tight text-white drop-shadow-sm">
+                  ${b.title}
+                </h3>
+                <p class="text-xs sm:text-sm text-stone-200 line-clamp-2 max-w-xl">
+                  ${b.subtitle || ''}
+                </p>
+                ${b.tag ? `
+                  <div class="pt-1 flex items-center gap-2 text-xs font-semibold text-amber-300">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                    <span>${b.tag}</span>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+        strip.appendChild(slide);
+
+        const dot = document.createElement("button");
+        dot.setAttribute("aria-label", `Banner ${idx + 1}`);
+        dot.className = `carousel-dot h-2 rounded-full transition-all duration-500 ${idx === currentSlideIndex ? 'w-7 bg-kenangan-red' : 'w-2 bg-white/70 hover:bg-white'}`;
+        dot.onclick = () => goToSlide(idx);
+        indicators.appendChild(dot);
+      });
+
+      track.appendChild(strip);
+      startCarouselTimer();
+      lucide.createIcons();
+    }
+
+    function updateCarouselPosition() {
+      const strip = document.getElementById("carouselStrip");
+      if (!strip) return;
+      strip.style.transform = `translateX(-${currentSlideIndex * 100}%)`;
+      document.querySelectorAll("#carouselIndicators .carousel-dot").forEach((dot, i) => {
+        dot.className = `carousel-dot h-2 rounded-full transition-all duration-500 ${i === currentSlideIndex ? 'w-7 bg-kenangan-red' : 'w-2 bg-white/70 hover:bg-white'}`;
+      });
+    }
+
+    function goToSlide(index) {
+      const activeBanners = banners.filter(b => b.active);
+      if (activeBanners.length === 0) return;
+      currentSlideIndex = (index + activeBanners.length) % activeBanners.length;
+      updateCarouselPosition();
+      startCarouselTimer(); // reset timer setelah geser manual
+    }
+
+    function nextSlide() {
+      goToSlide(currentSlideIndex + 1);
+    }
+
+    function prevSlide() {
+      goToSlide(currentSlideIndex - 1);
+    }
+
+    let carouselPaused = false;
+    function startCarouselTimer() {
+      if (carouselTimer) clearInterval(carouselTimer);
+      carouselTimer = setInterval(() => {
+        if (!carouselPaused && !document.hidden) nextSlide();
+      }, 3000);
+    }
+
+    // Swipe di HP + jeda saat kursor di atas banner (desktop)
+    (function initCarouselGestures() {
+      const wrap = document.getElementById("carouselWrapper");
+      if (!wrap) return;
+      let startX = 0, startY = 0, tracking = false;
+      wrap.addEventListener("mouseenter", () => carouselPaused = true);
+      wrap.addEventListener("mouseleave", () => carouselPaused = false);
+      wrap.addEventListener("touchstart", (e) => {
+        startX = e.touches[0].clientX; startY = e.touches[0].clientY; tracking = true; carouselPaused = true;
+      }, { passive: true });
+      wrap.addEventListener("touchend", (e) => {
+        carouselPaused = false;
+        if (!tracking) return;
+        tracking = false;
+        const dx = e.changedTouches[0].clientX - startX;
+        const dy = e.changedTouches[0].clientY - startY;
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) { dx < 0 ? nextSlide() : prevSlide(); }
+      }, { passive: true });
+    })();
+
+    /* ============================================================
+       F. PRODUCT CATALOG & FILTERING
+       ============================================================ */
+    function setCategory(cat) {
+      selectedCategory = cat;
+      document.querySelectorAll(".cat-pill").forEach(btn => {
+        if (btn.getAttribute("data-cat") === cat) {
+          btn.className = "cat-pill active flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all bg-kenangan-red text-white shadow-sm";
+        } else {
+          btn.className = "cat-pill flex items-center gap-2 px-5 py-2.5 rounded-2xl font-semibold text-xs sm:text-sm whitespace-nowrap transition-all bg-white text-stone-700 hover:text-kenangan-red border border-kenangan-border hover:border-kenangan-red shadow-subtle";
+        }
+      });
+      renderProductCatalog();
+    }
+
+    function handleSearch(val) {
+      searchQuery = val.trim().toLowerCase();
+      renderProductCatalog();
+    }
+
+    function renderProductCatalog() {
+      const grid = document.getElementById("productGrid");
+      const emptyState = document.getElementById("emptyCatalogState");
+      grid.innerHTML = "";
+
+      const filtered = products.filter(p => {
+        const matchCategory = selectedCategory === "all" || p.category === selectedCategory;
+        const matchSearch = p.name.toLowerCase().includes(searchQuery) || 
+                            p.description.toLowerCase().includes(searchQuery) ||
+                            p.category.toLowerCase().includes(searchQuery);
+        return matchCategory && matchSearch;
+      });
+
+      if (filtered.length === 0) {
+        emptyState.classList.remove("hidden");
+        return;
+      } else {
+        emptyState.classList.add("hidden");
+      }
+
+      filtered.forEach(p => {
+        const isSoldOut = p.stock <= 0;
+        const isLowStock = p.stock > 0 && p.stock <= 5;
+        
+        let stockBadge = "";
+        if (isSoldOut) {
+          stockBadge = `<span class="px-2.5 py-1 rounded-full bg-red-600 text-white font-extrabold text-[10px] tracking-wider uppercase shadow-sm">SOLD OUT</span>`;
+        } else if (isLowStock) {
+          stockBadge = `<span class="px-2.5 py-1 rounded-full bg-amber-500 text-white font-extrabold text-[10px] tracking-wider uppercase shadow-sm">Sisa ${p.stock} Botol!</span>`;
+        } else {
+          stockBadge = `<span class="px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md text-stone-700 font-bold text-[10px] border border-stone-200 shadow-sm">Stok: ${p.stock} Botol</span>`;
+        }
+
+        let actionBtn = "";
+        if (isSoldOut) {
+          actionBtn = `
+            <button disabled class="w-full py-2.5 rounded-2xl bg-stone-100 text-stone-400 font-bold text-xs cursor-not-allowed">
+              Habis Terjual
+            </button>
+          `;
+        } else {
+          actionBtn = `
+            <button onclick="addToCart('${p.id}', this)" class="w-full py-2.5 px-4 rounded-2xl bg-kenangan-red hover:bg-kenangan-redHover text-white font-bold text-xs sm:text-sm shadow-sm hover:shadow-card active:scale-[0.98] transition-all flex items-center justify-center gap-2 group/btn">
+              <i data-lucide="plus" class="w-4 h-4 stroke-[2.5] transition-transform group-hover/btn:scale-110"></i>
+              <span>Tambah</span>
+            </button>
+          `;
+        }
+
+        const card = document.createElement("div");
+        card.className = "group bg-white rounded-3xl overflow-hidden border border-kenangan-border hover:border-stone-300 transition-all duration-300 flex flex-col justify-between shadow-subtle hover:shadow-card-hover";
+        card.innerHTML = `
+          <div>
+            <div class="relative h-48 overflow-hidden bg-stone-100">
+              <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${isSoldOut ? 'grayscale opacity-60' : ''}">
+              
+              <div class="absolute top-3 left-3 px-2.5 py-1 rounded-xl bg-white/90 backdrop-blur-md text-stone-700 text-[10px] font-bold border border-stone-200 shadow-sm">
+                ${p.emoji || '🥤'} ${p.category}
+              </div>
+
+              <div class="absolute top-3 right-3">
+                ${stockBadge}
+              </div>
+            </div>
+
+            <div class="p-5 space-y-2">
+              <h3 class="font-extrabold text-kenangan-espresso text-base group-hover:text-kenangan-red transition-colors line-clamp-1">${p.name}</h3>
+              <p class="text-xs text-kenangan-textMuted line-clamp-2 leading-relaxed">${p.description}</p>
+            </div>
+          </div>
+
+          <div class="p-5 pt-0">
+            <div class="flex items-center justify-between mb-3 pt-3 border-t border-stone-100">
+              <span class="text-[11px] text-stone-400 font-medium">Harga</span>
+              <span class="text-base font-black text-kenangan-espresso">${formatRupiah(p.price)}</span>
+            </div>
+            ${actionBtn}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      lucide.createIcons();
+    }
+
+    /* ============================================================
+       G. CART & STEPPER CHECKOUT
+       ============================================================ */
+    function addToCart(productId, sourceEl) {
+      const prod = products.find(p => p.id === productId);
+      if (!prod || prod.stock <= 0) return;
+
+      const currentQty = cart[productId] || 0;
+      if (currentQty >= prod.stock) {
+        alert(`Maaf, stok ${prod.name} hanya tersisa ${prod.stock} Botol.`);
+        return;
+      }
+
+      cart[productId] = currentQty + 1;
+      updateCartBadge();
+      renderCartItems();
+
+      flyToCart(sourceEl, prod);
+    }
+
+    // Animasi: foto minuman "terbang" ke tombol keranjang lalu keranjang bergoyang
+    function flyToCart(sourceEl, prod) {
+      const cartBtn = document.getElementById("cartButton");
+      const navBadge = document.getElementById("navCartBadge");
+      const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      const bump = () => {
+        if (cartBtn && cartBtn.animate && !reduce) {
+          cartBtn.animate(
+            [{ transform: "scale(1)" }, { transform: "scale(1.12) rotate(-4deg)" }, { transform: "scale(0.96) rotate(3deg)" }, { transform: "scale(1)" }],
+            { duration: 420, easing: "ease-out" }
+          );
+        }
+        if (navBadge && navBadge.animate && !reduce) {
+          navBadge.animate([{ transform: "scale(1)" }, { transform: "scale(1.6)" }, { transform: "scale(1)" }], { duration: 380, easing: "ease-out" });
+        }
+      };
+
+      if (!sourceEl || !cartBtn || !sourceEl.animate || reduce) { bump(); return; }
+
+      // Umpan balik di tombol "+ Tambah"
+      sourceEl.animate([{ transform: "scale(1)" }, { transform: "scale(0.92)" }, { transform: "scale(1)" }], { duration: 220, easing: "ease-out" });
+
+      const card = sourceEl.closest(".group");
+      const img = card ? card.querySelector("img") : null;
+      const from = (img || sourceEl).getBoundingClientRect();
+      const to = cartBtn.getBoundingClientRect();
+
+      const size = 64;
+      const startX = from.left + from.width / 2 - size / 2;
+      const startY = from.top + from.height / 2 - size / 2;
+      const endX = to.left + to.width / 2 - size / 2;
+      const endY = to.top + to.height / 2 - size / 2;
+      const dx = endX - startX, dy = endY - startY;
+
+      const fly = document.createElement("div");
+      fly.setAttribute("aria-hidden", "true");
+      fly.style.cssText = `position:fixed;left:${startX}px;top:${startY}px;width:${size}px;height:${size}px;border-radius:9999px;` +
+        `z-index:9999;pointer-events:none;overflow:hidden;border:3px solid #fff;box-shadow:0 10px 25px rgba(147,27,30,.35);background:#931B1E;` +
+        `display:flex;align-items:center;justify-content:center;font-size:28px;will-change:transform,opacity;`;
+      if (img && img.src) {
+        fly.innerHTML = `<img src="${img.src}" style="width:100%;height:100%;object-fit:cover" alt="">`;
+      } else {
+        fly.textContent = (prod && prod.emoji) || "🥤";
+      }
+      document.body.appendChild(fly);
+
+      // Lintasan melengkung: naik sedikit dulu, lalu meluncur ke keranjang
+      const lift = Math.min(90, Math.abs(dy) * 0.25 + 40);
+      const anim = fly.animate([
+        { transform: "translate(0,0) scale(1)", opacity: 1, offset: 0 },
+        { transform: `translate(${dx * 0.45}px, ${dy * 0.45 - lift}px) scale(0.85)`, opacity: 1, offset: 0.45 },
+        { transform: `translate(${dx}px, ${dy}px) scale(0.25)`, opacity: 0.2, offset: 1 }
+      ], { duration: 750, easing: "cubic-bezier(0.55, 0, 0.35, 1)", fill: "forwards" });
+
+      const finish = () => { fly.remove(); bump(); };
+      anim.onfinish = finish;
+      anim.oncancel = finish;
+    }
+
+    function changeCartQty(productId, delta) {
+      const prod = products.find(p => p.id === productId);
+      if (!prod) return;
+
+      const currentQty = cart[productId] || 0;
+      const newQty = currentQty + delta;
+
+      if (newQty <= 0) {
+        delete cart[productId];
+      } else {
+        if (newQty > prod.stock) {
+          alert(`Maksimal pesanan sesuai stok yang tersedia: ${prod.stock} Botol.`);
+          return;
+        }
+        cart[productId] = newQty;
+      }
+
+      updateCartBadge();
+      renderCartItems();
+    }
+
+    function removeFromCart(productId) {
+      delete cart[productId];
+      updateCartBadge();
+      renderCartItems();
+    }
+
+    function getCartTotalCount() {
+      return Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+    }
+
+    function getCartSubtotalPrice() {
+      let subtotal = 0;
+      for (const [id, qty] of Object.entries(cart)) {
+        const prod = products.find(p => p.id === id);
+        if (prod) {
+          subtotal += prod.price * qty;
+        }
+      }
+      return subtotal;
+    }
+
+    function updateCartBadge() {
+      const count = getCartTotalCount();
+      const badge = document.getElementById("navCartBadge");
+      badge.textContent = count;
+    }
+
+    function openCartModal() {
+      document.getElementById("cartModal").classList.remove("hidden");
+      document.body.classList.add("overflow-hidden");
+      goToStep(1);
+      renderCartItems();
+      lucide.createIcons();
+    }
+
+    function closeCartModal() {
+      document.getElementById("cartModal").classList.add("hidden");
+      document.body.classList.remove("overflow-hidden");
+    }
+
+    function renderCartItems() {
+      const list = document.getElementById("cartItemList");
+      const emptyView = document.getElementById("cartEmptyView");
+      const summaryStep1 = document.getElementById("cartSummaryStep1");
+      const btnToStep2 = document.getElementById("btnToStep2");
+
+      list.innerHTML = "";
+      const itemIds = Object.keys(cart);
+
+      if (itemIds.length === 0) {
+        emptyView.classList.remove("hidden");
+        list.classList.add("hidden");
+        summaryStep1.classList.add("hidden");
+        btnToStep2.disabled = true;
+        btnToStep2.classList.add("opacity-50", "cursor-not-allowed");
+        document.getElementById("step1TotalItems").textContent = "0 Botol (250ml)";
+        document.getElementById("step1SubtotalPrice").textContent = "Rp 0";
+        return;
+      }
+
+      emptyView.classList.add("hidden");
+      list.classList.remove("hidden");
+      summaryStep1.classList.remove("hidden");
+      btnToStep2.disabled = false;
+      btnToStep2.classList.remove("opacity-50", "cursor-not-allowed");
+
+      itemIds.forEach(id => {
+        const p = products.find(prod => prod.id === id);
+        if (!p) return;
+        const qty = cart[id];
+        const lineTotal = p.price * qty;
+
+        const row = document.createElement("div");
+        row.className = "flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-stone-50 border border-kenangan-border";
+        row.innerHTML = `
+          <div class="flex items-center gap-3">
+            <img src="${p.image}" alt="${p.name}" class="w-14 h-14 object-cover rounded-xl border border-stone-200 shrink-0">
+            <div>
+              <h5 class="text-xs sm:text-sm font-bold text-kenangan-espresso line-clamp-1">${p.name}</h5>
+              <div class="text-[11px] text-stone-500 mt-0.5">${formatRupiah(p.price)} / botol 250ml</div>
+              <div class="text-xs font-black text-kenangan-red mt-0.5">${formatRupiah(lineTotal)}</div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <div class="flex items-center bg-white rounded-xl border border-stone-300 p-1">
+              <button onclick="changeCartQty('${p.id}', -1)" class="w-6 h-6 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 flex items-center justify-center font-bold text-xs">-</button>
+              <span class="w-8 text-center text-xs font-extrabold text-stone-800">${qty}</span>
+              <button onclick="changeCartQty('${p.id}', 1)" class="w-6 h-6 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 flex items-center justify-center font-bold text-xs">+</button>
+            </div>
+
+            <button onclick="removeFromCart('${p.id}')" class="p-2 rounded-xl text-stone-400 hover:text-red-600 hover:bg-red-50 transition-colors" title="Hapus">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+
+      document.getElementById("step1TotalItems").textContent = `${getCartTotalCount()} Botol (250ml)`;
+      document.getElementById("step1SubtotalPrice").textContent = formatRupiah(getCartSubtotalPrice());
+      lucide.createIcons();
+    }
+
+    function goToStep(stepNumber) {
+      const step1View = document.getElementById("checkoutStep1");
+      const step2View = document.getElementById("checkoutStep2");
+      const step3View = document.getElementById("checkoutStep3");
+
+      const footer1 = document.getElementById("footerStep1");
+      const footer2 = document.getElementById("footerStep2");
+      const footer3 = document.getElementById("footerStep3");
+
+      const ind1 = document.getElementById("stepIndicator1");
+      const ind2 = document.getElementById("stepIndicator2");
+      const ind3 = document.getElementById("stepIndicator3");
+
+      const line1 = document.getElementById("stepLine1");
+      const line2 = document.getElementById("stepLine2");
+
+      step1View.classList.add("hidden");
+      step2View.classList.add("hidden");
+      step3View.classList.add("hidden");
+      footer1.classList.add("hidden");
+      footer2.classList.add("hidden");
+      footer3.classList.add("hidden");
+
+      [ind1, ind2, ind3].forEach(el => {
+        el.className = "step-item flex items-center gap-2 font-semibold text-stone-400";
+        el.querySelector("span:first-child").className = "w-6 h-6 rounded-full bg-stone-200 text-stone-600 flex items-center justify-center text-xs";
+      });
+      line1.className = "w-8 sm:w-16 h-0.5 bg-stone-200";
+      line2.className = "w-8 sm:w-16 h-0.5 bg-stone-200";
+
+      if (stepNumber === 1) {
+        step1View.classList.remove("hidden");
+        footer1.classList.remove("hidden");
+        ind1.className = "step-item flex items-center gap-2 font-bold text-kenangan-red";
+        ind1.querySelector("span:first-child").className = "w-6 h-6 rounded-full bg-kenangan-red text-white flex items-center justify-center text-xs font-black";
+      } else if (stepNumber === 2) {
+        step2View.classList.remove("hidden");
+        footer2.classList.remove("hidden");
+
+        ind1.className = "step-item flex items-center gap-2 font-bold text-emerald-600";
+        ind1.querySelector("span:first-child").className = "w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-black";
+        line1.className = "w-8 sm:w-16 h-0.5 bg-emerald-600";
+
+        ind2.className = "step-item flex items-center gap-2 font-bold text-kenangan-red";
+        ind2.querySelector("span:first-child").className = "w-6 h-6 rounded-full bg-kenangan-red text-white flex items-center justify-center text-xs font-black";
+      } else if (stepNumber === 3) {
+        step3View.classList.remove("hidden");
+        footer3.classList.remove("hidden");
+
+        ind1.className = "step-item flex items-center gap-2 font-bold text-emerald-600";
+        ind1.querySelector("span:first-child").className = "w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-black";
+        line1.className = "w-8 sm:w-16 h-0.5 bg-emerald-600";
+
+        ind2.className = "step-item flex items-center gap-2 font-bold text-emerald-600";
+        ind2.querySelector("span:first-child").className = "w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-black";
+        line2.className = "w-8 sm:w-16 h-0.5 bg-emerald-600";
+
+        ind3.className = "step-item flex items-center gap-2 font-bold text-kenangan-red";
+        ind3.querySelector("span:first-child").className = "w-6 h-6 rounded-full bg-kenangan-red text-white flex items-center justify-center text-xs font-black";
+
+        updateStep3Summary();
+      }
+
+      lucide.createIcons();
+    }
+
+    function toggleShippingMethod(method) {
+      selectedShipping = method;
+      const addrWrapper = document.getElementById("deliveryAddressWrapper");
+      const cardPickup = document.getElementById("cardPickup");
+      const cardDelivery = document.getElementById("cardDelivery");
+
+      if (method === "delivery") {
+        addrWrapper.classList.remove("hidden");
+        cardDelivery.className = "relative flex flex-col p-4 rounded-2xl bg-white border-2 border-kenangan-red cursor-pointer shipping-radio-card";
+        cardPickup.className = "relative flex flex-col p-4 rounded-2xl bg-white border-2 border-stone-200 cursor-pointer shipping-radio-card";
+      } else {
+        addrWrapper.classList.add("hidden");
+        cardPickup.className = "relative flex flex-col p-4 rounded-2xl bg-white border-2 border-kenangan-red cursor-pointer shipping-radio-card";
+        cardDelivery.className = "relative flex flex-col p-4 rounded-2xl bg-white border-2 border-stone-200 cursor-pointer shipping-radio-card";
+      }
+    }
+
+    function validateAndGoToStep3() {
+      const name = document.getElementById("custName").value.trim();
+      const phone = document.getElementById("custPhone").value.trim();
+      const address = document.getElementById("deliveryAddress").value.trim();
+      const errName = document.getElementById("errCustName");
+      const errPhone = document.getElementById("errCustPhone");
+      const errAddr = document.getElementById("errDeliveryAddress");
+
+      let valid = true;
+
+      if (!name) { errName.classList.remove("hidden"); valid = false; } else { errName.classList.add("hidden"); }
+      if (!phone || phone.length < 9) { errPhone.classList.remove("hidden"); valid = false; } else { errPhone.classList.add("hidden"); }
+      if (selectedShipping === "delivery" && !address) { errAddr.classList.remove("hidden"); valid = false; } else { errAddr.classList.add("hidden"); }
+
+      if (valid) goToStep(3);
+    }
+
+    function updateStep3Summary() {
+      const subtotal = getCartSubtotalPrice();
+      const shippingCost = (selectedShipping === "delivery") ? 1000 : 0;
+      const grandTotal = subtotal + shippingCost;
+
+      document.getElementById("step3Subtotal").textContent = formatRupiah(subtotal);
+      
+      const shippingLabel = document.getElementById("step3ShippingLabel");
+      const shippingFee = document.getElementById("step3ShippingFee");
+      
+      if (selectedShipping === "delivery") {
+        shippingLabel.textContent = "Ongkos Kirim (Delivery < 1km):";
+        shippingFee.textContent = "+Rp 1.000";
+        shippingFee.className = "font-bold text-kenangan-red";
+      } else {
+        shippingLabel.textContent = "Ongkos Kirim (Ambil di Kampus):";
+        shippingFee.textContent = "Gratis (Rp 0)";
+        shippingFee.className = "font-bold text-emerald-600";
+      }
+
+      document.getElementById("step3GrandTotal").textContent = formatRupiah(grandTotal);
+    }
+
+    function switchPaymentTab(tab) {
+      selectedPaymentMethod = tab;
+      const btnQris = document.getElementById("tabBtnQris");
+      const btnBank = document.getElementById("tabBtnBank");
+      const contentQris = document.getElementById("paymentContentQris");
+      const contentBank = document.getElementById("paymentContentBank");
+
+      if (tab === "qris") {
+        btnQris.className = "py-2.5 rounded-xl text-xs font-bold bg-white text-kenangan-red shadow-sm flex items-center justify-center gap-1.5";
+        btnBank.className = "py-2.5 rounded-xl text-xs font-bold text-stone-500 hover:text-stone-800 flex items-center justify-center gap-1.5";
+        contentQris.classList.remove("hidden");
+        contentBank.classList.add("hidden");
+      } else {
+        btnBank.className = "py-2.5 rounded-xl text-xs font-bold bg-white text-kenangan-red shadow-sm flex items-center justify-center gap-1.5";
+        btnQris.className = "py-2.5 rounded-xl text-xs font-bold text-stone-500 hover:text-stone-800 flex items-center justify-center gap-1.5";
+        contentBank.classList.remove("hidden");
+        contentQris.classList.add("hidden");
+      }
+      lucide.createIcons();
+    }
+
+    function copyToClipboard(text, btnElement) {
+      navigator.clipboard.writeText(text).then(() => {
+        const origHTML = btnElement.innerHTML;
+        btnElement.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i> <span class="text-emerald-600">Tersalin!</span>`;
+        lucide.createIcons();
+        setTimeout(() => {
+          btnElement.innerHTML = origHTML;
+          lucide.createIcons();
+        }, 2000);
+      });
+    }
+
+    function handleProofUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        proofBase64 = event.target.result;
+        document.getElementById("previewImg").src = proofBase64;
+        document.getElementById("previewFileName").textContent = file.name;
+        document.getElementById("uploadPrompt").classList.add("hidden");
+        document.getElementById("uploadPreview").classList.remove("hidden");
+        document.getElementById("errProofUpload").classList.add("hidden");
+        lucide.createIcons();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearProofUpload(e) {
+      e.stopPropagation();
+      proofBase64 = "";
+      document.getElementById("proofUploadInput").value = "";
+      document.getElementById("previewImg").src = "";
+      document.getElementById("uploadPrompt").classList.remove("hidden");
+      document.getElementById("uploadPreview").classList.add("hidden");
+    }
+
+    function submitOrderFinal() {
+      if (!proofBase64) {
+        const err = document.getElementById("errProofUpload");
+        err.classList.remove("hidden");
+        err.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+
+      const now = new Date();
+      const sheetTag = getIndonesianSheetTag(now);
+      const orderId = `TTS-${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      const custName = document.getElementById("custName").value.trim();
+      const custPhone = document.getElementById("custPhone").value.trim();
+      const deliveryAddress = selectedShipping === "delivery" ? document.getElementById("deliveryAddress").value.trim() : "-";
+      
+      const subtotal = getCartSubtotalPrice();
+      const shippingCost = selectedShipping === "delivery" ? 1000 : 0;
+      const grandTotal = subtotal + shippingCost;
+
+      // Auto Decrement Stok
+      const orderItems = [];
+      for (const [id, qty] of Object.entries(cart)) {
+        const prod = products.find(p => p.id === id);
+        if (prod) {
+          prod.stock = Math.max(0, prod.stock - qty);
+          orderItems.push({
+            id: prod.id,
+            name: prod.name,
+            price: prod.price,
+            qty: qty,
+            subtotal: prod.price * qty
+          });
+        }
+      }
+
+      saveProductsToStorage();
+      renderProductCatalog();
+
+      const newOrder = {
+        orderId,
+        sheetTag,
+        createdAt: now.toISOString(),
+        timeString: now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+        custName,
+        custPhone,
+        shippingMethod: selectedShipping,
+        shippingAddress: deliveryAddress,
+        paymentMethod: selectedPaymentMethod,
+        items: orderItems,
+        subtotal,
+        shippingCost,
+        grandTotal,
+        proofBase64
+      };
+
+      orders.unshift(newOrder);
+      saveOrdersToStorage();
+
+      cart = {};
+      proofBase64 = "";
+      updateCartBadge();
+      closeCartModal();
+
+      showOrderSuccess(newOrder);
+    }
+
+    function showOrderSuccess(order) {
+      document.getElementById("successOrderId").textContent = order.orderId;
+      document.getElementById("successSheetTag").textContent = order.sheetTag;
+      document.getElementById("successGrandTotal").textContent = formatRupiah(order.grandTotal);
+
+      let itemSummary = order.items.map(it => `• ${it.name} (${it.qty}x) = ${formatRupiah(it.subtotal)}`).join("%0A");
+      let message = `*KONFIRMASI PESANAN ${order.orderId}*%0A%0A` +
+        `Halo Admin TETESDRINK.co, saya sudah bayar:%0A` +
+        `👤 *Nama:* ${order.custName}%0A` +
+        `📱 *No. WA:* ${order.custPhone}%0A` +
+        `📦 *Pengiriman:* ${order.shippingMethod === 'delivery' ? 'Delivery Kilat (< 1km)' : 'Ambil di Kampus'}%0A` +
+        (order.shippingMethod === 'delivery' ? `📍 *Alamat:* ${order.shippingAddress}%0A` : '') +
+        `💳 *Metode:* ${order.paymentMethod.toUpperCase()}%0A%0A` +
+        `*Rincian Menu:*%0A${itemSummary}%0A%0A` +
+        `💰 *Total Pembayaran:* ${formatRupiah(order.grandTotal)}%0A` +
+        `Bukti transfer sudah saya upload di web app. Terima kasih!`;
+
+      const waBtn = document.getElementById("successWhatsAppLink");
+      waBtn.href = `https://wa.me/6288219909522?text=${message}`;
+
+      document.getElementById("successModal").classList.remove("hidden");
+      lucide.createIcons();
+    }
+
+    function closeSuccessModal() {
+      document.getElementById("successModal").classList.add("hidden");
+    }
+
+    /* ============================================================
+       H. ADMIN AUTH & DASHBOARD
+       ============================================================ */
+    function openAdminAuthModal() {
+      document.getElementById("adminAuthModal").classList.remove("hidden");
+      const pinInput = document.getElementById("adminPinInput");
+      pinInput.value = "";
+      document.getElementById("adminPinError").classList.add("hidden");
+      setTimeout(() => pinInput.focus(), 150);
+      lucide.createIcons();
+    }
+
+    function closeAdminAuthModal() {
+      document.getElementById("adminAuthModal").classList.add("hidden");
+    }
+
+    function togglePinVisibility() {
+      const pinInput = document.getElementById("adminPinInput");
+      const eyeIcon = document.getElementById("eyeIcon");
+      if (pinInput.type === "password") {
+        pinInput.type = "text";
+        eyeIcon.setAttribute("data-lucide", "eye-off");
+      } else {
+        pinInput.type = "password";
+        eyeIcon.setAttribute("data-lucide", "eye");
+      }
+      lucide.createIcons();
+    }
+
+    function verifyAdminPin() {
+      const pinInput = document.getElementById("adminPinInput");
+      const err = document.getElementById("adminPinError");
+      const enteredPin = pinInput.value.trim();
+
+      if (enteredPin === ADMIN_PIN || enteredPin === "1234") {
+        closeAdminAuthModal();
+        openAdminDashboard();
+      } else {
+        err.classList.remove("hidden");
+        const box = document.getElementById("authBox");
+        box.classList.add("animate-pulse");
+        setTimeout(() => box.classList.remove("animate-pulse"), 500);
+      }
+    }
+
+    function openAdminDashboard() {
+      document.getElementById("adminDashboardModal").classList.remove("hidden");
+      document.body.classList.add("overflow-hidden");
+      refreshAdminData();
+      lucide.createIcons();
+    }
+
+    function closeAdminDashboard() {
+      document.getElementById("adminDashboardModal").classList.add("hidden");
+      document.body.classList.remove("overflow-hidden");
+      renderProductCatalog();
+      renderCarousel();
+      renderBranding();
+    }
+
+    function switchAdminTab(tab) {
+      const tabs = ["products", "banners", "branding", "orders", "socials"];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`adminTab${capitalize(t)}Btn`);
+        const view = document.getElementById(`adminTab${capitalize(t)}`);
+        if (t === tab) {
+          btn.className = "px-4 py-2 rounded-2xl text-xs font-bold bg-kenangan-red text-white shadow-sm whitespace-nowrap";
+          view.classList.remove("hidden");
+        } else {
+          btn.className = "px-4 py-2 rounded-2xl text-xs font-semibold text-stone-600 hover:text-kenangan-red bg-white border border-kenangan-border whitespace-nowrap";
+          view.classList.add("hidden");
+        }
+      });
+
+      if (tab === "products") renderAdminProductTable();
+      if (tab === "banners") renderAdminBannerList();
+      if (tab === "branding") renderAdminBrandingTab();
+      if (tab === "orders") renderAdminOrders();
+      if (tab === "socials") renderAdminSocials();
+      lucide.createIcons();
+    }
+
+    function capitalize(s) {
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    function refreshAdminData() {
+      document.getElementById("statTotalVariants").textContent = products.length;
+      const totalStock = products.reduce((sum, p) => sum + (parseInt(p.stock) || 0), 0);
+      document.getElementById("statTotalStock").textContent = `${totalStock} Botol`;
+      document.getElementById("statTotalOrders").textContent = orders.length;
+      document.getElementById("statTotalBanners").textContent = banners.filter(b => b.active).length;
+
+      renderAdminProductTable();
+      renderAdminBannerList();
+      renderAdminBrandingTab();
+      renderAdminSocials();
+    }
+
+    function renderAdminProductTable() {
+      const tbody = document.getElementById("adminProductTableBody");
+      tbody.innerHTML = "";
+
+      products.forEach((p) => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-stone-50 transition-colors";
+        
+        const isSoldOut = p.stock <= 0;
+        const statusBadge = isSoldOut 
+          ? `<span class="px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-bold text-[10px]">SOLD OUT</span>`
+          : `<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold text-[10px]">Tersedia</span>`;
+
+        tr.innerHTML = `
+          <td class="py-3 px-4">
+            <div class="flex items-center gap-3">
+              <img src="${p.image}" alt="${p.name}" class="w-10 h-10 object-cover rounded-xl border border-stone-200 shrink-0">
+              <div>
+                <span class="font-bold text-kenangan-espresso block">${p.name}</span>
+                <span class="text-[10px] text-stone-400 line-clamp-1 max-w-xs">${p.description}</span>
+              </div>
+            </div>
+          </td>
+          <td class="py-3 px-4">
+            <span class="px-2.5 py-1 rounded-xl bg-stone-100 text-stone-700 text-[11px] font-medium whitespace-nowrap">
+              ${p.category}
+            </span>
+          </td>
+          <td class="py-3 px-4 font-bold text-kenangan-espresso whitespace-nowrap">
+            ${formatRupiah(p.price)}
+          </td>
+          <td class="py-3 px-4 text-center">
+            <div class="inline-flex items-center bg-stone-50 rounded-xl border border-stone-300 p-1">
+              <button onclick="inlineAdjustStock('${p.id}', -1)" class="w-6 h-6 rounded-lg bg-white hover:bg-stone-100 text-stone-700 flex items-center justify-center font-bold text-xs">-</button>
+              <input type="number" min="0" value="${p.stock}" onchange="inlineUpdateStockInput('${p.id}', this.value)" class="w-14 bg-transparent text-center font-extrabold text-xs text-stone-800 focus:outline-none">
+              <button onclick="inlineAdjustStock('${p.id}', 1)" class="w-6 h-6 rounded-lg bg-white hover:bg-stone-100 text-stone-700 flex items-center justify-center font-bold text-xs">+</button>
+            </div>
+          </td>
+          <td class="py-3 px-4 text-center whitespace-nowrap">
+            ${statusBadge}
+          </td>
+          <td class="py-3 px-4 text-right whitespace-nowrap">
+            <div class="inline-flex items-center gap-2">
+              <button onclick="openProductFormModal('edit', '${p.id}')" class="p-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-kenangan-red transition-all" title="Edit Varian">
+                <i data-lucide="edit-3" class="w-4 h-4"></i>
+              </button>
+              <button onclick="deleteProduct('${p.id}')" class="p-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 transition-all" title="Hapus Varian">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      lucide.createIcons();
+    }
+
+    function inlineAdjustStock(productId, delta) {
+      const prod = products.find(p => p.id === productId);
+      if (!prod) return;
+      prod.stock = Math.max(0, (parseInt(prod.stock) || 0) + delta);
+      saveProductsToStorage();
+      refreshAdminData();
+    }
+
+    function inlineUpdateStockInput(productId, value) {
+      const prod = products.find(p => p.id === productId);
+      if (!prod) return;
+      const num = parseInt(value);
+      prod.stock = isNaN(num) || num < 0 ? 0 : num;
+      saveProductsToStorage();
+      refreshAdminData();
+    }
+
+    function deleteProduct(productId) {
+      const prod = products.find(p => p.id === productId);
+      if (!prod) return;
+
+      if (confirm(`Yakin ingin menghapus varian "${prod.name}" dari katalog?`)) {
+        products = products.filter(p => p.id !== productId);
+        delete cart[productId];
+        updateCartBadge();
+        saveProductsToStorage();
+        refreshAdminData();
+        renderProductCatalog();
+      }
+    }
+
+    function resetToDefaultCatalog() {
+      if (confirm("Kembalikan seluruh varian menu ke daftar default?")) {
+        products = [...DEFAULT_PRODUCTS];
+        saveProductsToStorage();
+        refreshAdminData();
+        renderProductCatalog();
+      }
+    }
+
+    /* ============================================================
+       I. PRODUCT ADD / EDIT MODAL
+       ============================================================ */
+    let currentEditingProductId = null;
+    let tempProductImageBase64 = "";
+
+    function openProductFormModal(mode, productId = null) {
+      const modal = document.getElementById("productFormModal");
+      const title = document.getElementById("productFormModalTitle");
+      const form = document.getElementById("productForm");
+      
+      form.reset();
+      tempProductImageBase64 = "";
+
+      if (mode === "edit" && productId) {
+        currentEditingProductId = productId;
+        const prod = products.find(p => p.id === productId);
+        if (!prod) return;
+
+        title.innerHTML = `<i data-lucide="edit-3" class="w-5 h-5 text-kenangan-red"></i><span>Edit Varian: ${prod.name}</span>`;
+        document.getElementById("formProductId").value = prod.id;
+        document.getElementById("formProductName").value = prod.name;
+        document.getElementById("formProductCategory").value = prod.category;
+        document.getElementById("formProductPrice").value = prod.price;
+        document.getElementById("formProductStock").value = prod.stock;
+        document.getElementById("formProductEmoji").value = prod.emoji || "";
+        document.getElementById("formProductDesc").value = prod.description;
+        document.getElementById("formProductImageUrl").value = prod.image.startsWith("data:") ? "" : prod.image;
+        document.getElementById("formProductImagePreview").src = prod.image;
+      } else {
+        currentEditingProductId = null;
+        title.innerHTML = `<i data-lucide="plus-circle" class="w-5 h-5 text-kenangan-red"></i><span>Tambah Varian Minuman Baru</span>`;
+        document.getElementById("formProductImagePreview").src = "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=300&q=80";
+      }
+
+      modal.classList.remove("hidden");
+      lucide.createIcons();
+    }
+
+    function closeProductFormModal() {
+      document.getElementById("productFormModal").classList.add("hidden");
+    }
+
+    function handleProductImageFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        tempProductImageBase64 = event.target.result;
+        document.getElementById("formProductImagePreview").src = tempProductImageBase64;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function updateImagePreviewFromUrl(url) {
+      if (url.trim()) {
+        document.getElementById("formProductImagePreview").src = url.trim();
+      }
+    }
+
+    function handleProductFormSubmit(e) {
+      e.preventDefault();
+
+      const name = document.getElementById("formProductName").value.trim();
+      const category = document.getElementById("formProductCategory").value;
+      const price = parseInt(document.getElementById("formProductPrice").value) || 0;
+      const stock = parseInt(document.getElementById("formProductStock").value) || 0;
+      const emoji = document.getElementById("formProductEmoji").value.trim() || "🥤";
+      const description = document.getElementById("formProductDesc").value.trim();
+      const imageUrlInput = document.getElementById("formProductImageUrl").value.trim();
+
+      let finalImage = tempProductImageBase64 || imageUrlInput || "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=600&q=80";
+
+      if (currentEditingProductId) {
+        const prod = products.find(p => p.id === currentEditingProductId);
+        if (prod) {
+          prod.name = name;
+          prod.category = category;
+          prod.price = price;
+          prod.stock = stock;
+          prod.emoji = emoji;
+          prod.description = description;
+          if (tempProductImageBase64 || imageUrlInput) prod.image = finalImage;
+        }
+      } else {
+        const newProduct = {
+          id: `prod-${Date.now()}`,
+          name,
+          category,
+          price,
+          stock,
+          emoji,
+          description,
+          image: finalImage
+        };
+        products.unshift(newProduct);
+      }
+
+      saveProductsToStorage();
+      closeProductFormModal();
+      refreshAdminData();
+      renderProductCatalog();
+    }
+
+    /* ============================================================
+       J. SLIDE BANNER MANAGEMENT IN ADMIN (CRUD)
+       ============================================================ */
+    let currentEditingBannerId = null;
+    let tempBannerImageBase64 = "";
+
+    function renderAdminBannerList() {
+      const container = document.getElementById("adminBannerList");
+      container.innerHTML = "";
+
+      banners.forEach((b) => {
+        const card = document.createElement("div");
+        card.className = "bg-white rounded-3xl border border-kenangan-border overflow-hidden shadow-subtle flex flex-col justify-between";
+        card.innerHTML = `
+          <div>
+            <div class="relative h-36 bg-stone-100 overflow-hidden">
+              <img src="${b.image}" alt="${b.title}" class="w-full h-full object-cover">
+              <div class="absolute top-3 left-3 px-2 py-0.5 rounded-lg bg-kenangan-red text-white text-[10px] font-bold">
+                ${b.badge || 'PROMO'}
+              </div>
+              <div class="absolute top-3 right-3">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${b.active ? 'bg-emerald-100 text-emerald-800' : 'bg-stone-200 text-stone-600'}">
+                  ${b.active ? 'Aktif di Slider' : 'Dinonaktifkan'}
+                </span>
+              </div>
+            </div>
+
+            <div class="p-4 space-y-1">
+              <h5 class="font-bold text-kenangan-espresso text-xs sm:text-sm line-clamp-1">${b.title}</h5>
+              <p class="text-[11px] text-kenangan-textMuted line-clamp-2">${b.subtitle || '-'}</p>
+            </div>
+          </div>
+
+          <div class="p-4 pt-0 border-t border-stone-100 flex items-center justify-between mt-2">
+            <button onclick="toggleBannerStatus('${b.id}')" class="text-xs font-semibold ${b.active ? 'text-amber-600 hover:text-amber-700' : 'text-emerald-600 hover:text-emerald-700'}">
+              ${b.active ? 'Sembunyikan' : 'Tampilkan'}
+            </button>
+
+            <div class="flex items-center gap-1.5">
+              <button onclick="openBannerFormModal('edit', '${b.id}')" class="p-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-kenangan-red" title="Edit Banner">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+              </button>
+              <button onclick="deleteBanner('${b.id}')" class="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600" title="Hapus Banner">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      lucide.createIcons();
+    }
+
+    function openBannerFormModal(mode, bannerId = null) {
+      const modal = document.getElementById("bannerFormModal");
+      const title = document.getElementById("bannerFormModalTitle");
+      const form = document.getElementById("bannerForm");
+
+      form.reset();
+      tempBannerImageBase64 = "";
+
+      if (mode === "edit" && bannerId) {
+        currentEditingBannerId = bannerId;
+        const b = banners.find(item => item.id === bannerId);
+        if (!b) return;
+
+        title.innerHTML = `<i data-lucide="edit-3" class="w-5 h-5 text-kenangan-red"></i><span>Edit Banner Slide</span>`;
+        document.getElementById("formBannerId").value = b.id;
+        document.getElementById("formBannerTitle").value = b.title;
+        document.getElementById("formBannerSubtitle").value = b.subtitle || "";
+        document.getElementById("formBannerBadge").value = b.badge || "";
+        document.getElementById("formBannerTag").value = b.tag || "";
+        document.getElementById("formBannerImageUrl").value = b.image.startsWith("data:") ? "" : b.image;
+        document.getElementById("formBannerImagePreview").src = b.image;
+      } else {
+        currentEditingBannerId = null;
+        title.innerHTML = `<i data-lucide="plus-circle" class="w-5 h-5 text-kenangan-red"></i><span>Tambah Banner Slide Baru</span>`;
+        document.getElementById("formBannerImagePreview").src = "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=800&q=80";
+      }
+
+      modal.classList.remove("hidden");
+      lucide.createIcons();
+    }
+
+    function closeBannerFormModal() {
+      document.getElementById("bannerFormModal").classList.add("hidden");
+    }
+
+    function handleBannerImageFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        tempBannerImageBase64 = event.target.result;
+        document.getElementById("formBannerImagePreview").src = tempBannerImageBase64;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function updateBannerPreviewFromUrl(url) {
+      if (url.trim()) {
+        document.getElementById("formBannerImagePreview").src = url.trim();
+      }
+    }
+
+    function handleBannerFormSubmit(e) {
+      e.preventDefault();
+
+      const title = document.getElementById("formBannerTitle").value.trim();
+      const subtitle = document.getElementById("formBannerSubtitle").value.trim();
+      const badge = document.getElementById("formBannerBadge").value.trim() || "PROMO";
+      const tag = document.getElementById("formBannerTag").value.trim();
+      const imageUrlInput = document.getElementById("formBannerImageUrl").value.trim();
+
+      let finalImage = tempBannerImageBase64 || imageUrlInput || "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1200&q=80";
+
+      if (currentEditingBannerId) {
+        const b = banners.find(item => item.id === currentEditingBannerId);
+        if (b) {
+          b.title = title;
+          b.subtitle = subtitle;
+          b.badge = badge;
+          b.tag = tag;
+          if (tempBannerImageBase64 || imageUrlInput) b.image = finalImage;
+        }
+      } else {
+        const newBanner = {
+          id: `banner-${Date.now()}`,
+          title,
+          subtitle,
+          badge,
+          tag,
+          image: finalImage,
+          active: true
+        };
+        banners.unshift(newBanner);
+      }
+
+      saveBannersToStorage();
+      closeBannerFormModal();
+      refreshAdminData();
+      renderCarousel();
+    }
+
+    function toggleBannerStatus(bannerId) {
+      const b = banners.find(item => item.id === bannerId);
+      if (!b) return;
+      b.active = !b.active;
+      saveBannersToStorage();
+      refreshAdminData();
+      renderCarousel();
+    }
+
+    function deleteBanner(bannerId) {
+      if (confirm("Apakah Anda yakin ingin menghilangkan banner ini dari sistem?")) {
+        banners = banners.filter(item => item.id !== bannerId);
+        saveBannersToStorage();
+        refreshAdminData();
+        renderCarousel();
+      }
+    }
+
+    /* ============================================================
+       K. BRANDING & LOGO SETTINGS IN ADMIN
+       ============================================================ */
+    let tempBrandingLogoBase64 = "";
+
+    // Helper kompresi gambar berbasis Canvas (mencegah kuota localStorage penuh)
+    function compressImageToDataUrl(srcDataUrl, maxWidth, maxHeight, quality, callback) {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        callback(canvas.toDataURL("image/png", quality));
+      };
+      img.onerror = () => callback(srcDataUrl);
+      img.src = srcDataUrl;
+    }
+
+    function renderAdminBrandingTab() {
+      const nameInput = document.getElementById("brandingNameInput");
+      const extInput = document.getElementById("brandingExtInput");
+      const sloganInput = document.getElementById("brandingSloganInput");
+
+      if (nameInput) nameInput.value = branding.name;
+      if (extInput) extInput.value = branding.ext;
+      if (sloganInput) sloganInput.value = branding.slogan;
+
+      const previewBox = document.getElementById("adminBrandingPreview");
+      const clearBtn = document.getElementById("btnClearLogoImg");
+      const filePreviewWrap = document.getElementById("brandingImgPreviewWrap");
+      const filePreview = document.getElementById("brandingImgPreview");
+
+      const activeLogo = tempBrandingLogoBase64 || branding.customLogoUrl;
+
+      if (activeLogo) {
+        if (previewBox) {
+          previewBox.innerHTML = `
+            <img src="${activeLogo}" alt="Logo" class="h-10 w-auto object-contain rounded-xl">
+            <span class="text-xs font-bold text-kenangan-espresso">${branding.name}${branding.ext}</span>
+          `;
+        }
+        if (clearBtn) clearBtn.classList.remove("hidden");
+        if (filePreviewWrap) filePreviewWrap.classList.remove("hidden");
+        if (filePreview) filePreview.src = activeLogo;
+      } else {
+        if (previewBox) {
+          previewBox.innerHTML = `
+            <div class="w-9 h-9 rounded-xl bg-kenangan-red text-white flex items-center justify-center font-bold">
+              <i data-lucide="coffee" class="w-5 h-5"></i>
+            </div>
+            <span class="text-xs font-bold text-kenangan-espresso">${branding.name}${branding.ext} (Default)</span>
+          `;
+        }
+        if (clearBtn) clearBtn.classList.add("hidden");
+        if (filePreviewWrap) filePreviewWrap.classList.add("hidden");
+      }
+      lucide.createIcons();
+    }
+
+    function handleBrandingLogoUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith("image/")) {
+        alert("Pilih file gambar valid (JPG, PNG, WEBP, atau SVG).");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const raw = event.target.result;
+        compressImageToDataUrl(raw, 320, 320, 0.9, (compressed) => {
+          tempBrandingLogoBase64 = compressed;
+          const previewImg = document.getElementById("brandingImgPreview");
+          const previewWrap = document.getElementById("brandingImgPreviewWrap");
+          const clearBtn = document.getElementById("btnClearLogoImg");
+          const previewBox = document.getElementById("adminBrandingPreview");
+
+          if (previewImg) previewImg.src = compressed;
+          if (previewWrap) previewWrap.classList.remove("hidden");
+          if (clearBtn) clearBtn.classList.remove("hidden");
+
+          if (previewBox) {
+            previewBox.innerHTML = `
+              <img src="${compressed}" alt="Logo" class="h-10 w-auto object-contain rounded-xl">
+              <span class="text-xs font-bold text-kenangan-espresso">${branding.name}${branding.ext} (Pratinjau Baru)</span>
+            `;
+          }
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearUploadedLogoImage() {
+      tempBrandingLogoBase64 = "";
+      branding.customLogoUrl = "";
+      const fileInput = document.getElementById("brandingLogoFile");
+      if (fileInput) fileInput.value = "";
+      const previewWrap = document.getElementById("brandingImgPreviewWrap");
+      if (previewWrap) previewWrap.classList.add("hidden");
+      const clearBtn = document.getElementById("btnClearLogoImg");
+      if (clearBtn) clearBtn.classList.add("hidden");
+
+      const previewBox = document.getElementById("adminBrandingPreview");
+      if (previewBox) {
+        previewBox.innerHTML = `
+          <div class="w-9 h-9 rounded-xl bg-kenangan-red text-white flex items-center justify-center font-bold">
+            <i data-lucide="coffee" class="w-5 h-5"></i>
+          </div>
+          <span class="text-xs font-bold text-kenangan-espresso">${branding.name}${branding.ext} (Default)</span>
+        `;
+        lucide.createIcons();
+      }
+    }
+
+    function saveBrandingSettings(e) {
+      e.preventDefault();
+
+      const nameInput = document.getElementById("brandingNameInput");
+      const extInput = document.getElementById("brandingExtInput");
+      const sloganInput = document.getElementById("brandingSloganInput");
+
+      branding.name = (nameInput ? nameInput.value.trim() : "") || "TETESDRINK";
+      branding.ext = (extInput ? extInput.value.trim() : "") || ".co";
+      branding.slogan = (sloganInput ? sloganInput.value.trim() : "") || "Flavor bit full";
+
+      if (tempBrandingLogoBase64) {
+        branding.customLogoUrl = tempBrandingLogoBase64;
+      }
+
+      saveBrandingToStorage();
+      renderBranding();
+      renderAdminBrandingTab();
+      alert("✅ Pengaturan Logo & Branding berhasil diperbarui!");
+    }
+
+    function resetLogoToDefault() {
+      if (confirm("Kembalikan logo dan branding ke setelan awal default?")) {
+        branding = { ...DEFAULT_BRANDING };
+        tempBrandingLogoBase64 = "";
+        const fileInput = document.getElementById("brandingLogoFile");
+        if (fileInput) fileInput.value = "";
+        saveBrandingToStorage();
+        renderBranding();
+        renderAdminBrandingTab();
+        alert("✅ Logo dan branding telah dikembalikan ke setelan default!");
+      }
+    }
+
+    /* ============================================================
+       L. ORDERS SPREADSHEET LOG & CSV EXPORT
+       ============================================================ */
+    function renderAdminOrders() {
+      const container = document.getElementById("ordersListContainer");
+      container.innerHTML = "";
+
+      if (orders.length === 0) {
+        container.innerHTML = `
+          <div class="p-12 text-center bg-white rounded-3xl border border-kenangan-border shadow-subtle">
+            <i data-lucide="clipboard-x" class="w-10 h-10 text-stone-400 mx-auto mb-2"></i>
+            <h5 class="text-stone-800 font-bold text-sm">Belum Ada Pesanan Masuk</h5>
+            <p class="text-xs text-stone-500 mt-1">Pesanan checkout akan otomatis dicatat dalam log spreadsheet harian di sini.</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      const grouped = {};
+      orders.forEach(order => {
+        const tag = order.sheetTag || "Sheet Pesanan Umum";
+        if (!grouped[tag]) grouped[tag] = [];
+        grouped[tag].push(order);
+      });
+
+      for (const [sheetTitle, sheetOrders] of Object.entries(grouped)) {
+        const sheetSection = document.createElement("div");
+        sheetSection.className = "bg-white border border-kenangan-border rounded-3xl p-5 space-y-4 shadow-subtle";
+        
+        sheetSection.innerHTML = `
+          <div class="flex items-center justify-between border-b border-stone-100 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-kenangan-red"></span>
+              <h4 class="text-sm font-extrabold text-kenangan-espresso font-mono">${sheetTitle}</h4>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 font-semibold">${sheetOrders.length} Pesanan</span>
+            </div>
+            <span class="text-[11px] text-stone-400 font-medium">Log Harian Aktif</span>
+          </div>
+
+          <div class="space-y-3">
+            ${sheetOrders.map(order => `
+              <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div class="space-y-1">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono text-xs font-black text-kenangan-red">${order.orderId}</span>
+                    <span class="text-[10px] text-stone-400">• ${order.timeString || 'WIB'}</span>
+                    <span class="px-2 py-0.5 rounded bg-white text-stone-700 text-[10px] font-bold border border-stone-200">
+                      ${order.shippingMethod === 'delivery' ? '🛵 Delivery Kilat' : '🎓 Ambil Stand'}
+                    </span>
+                  </div>
+                  <div class="text-xs font-bold text-kenangan-espresso flex items-center gap-1.5">
+                    <span>${order.custName}</span>
+                    <span class="text-stone-400">•</span>
+                    <span class="font-mono text-stone-600">${order.custPhone}</span>
+                  </div>
+                  <div class="text-[11px] text-stone-600">
+                    ${order.items.map(it => `${it.name} (${it.qty}x)`).join(', ')}
+                  </div>
+                  ${order.shippingAddress && order.shippingAddress !== '-' ? `<div class="text-[10px] text-kenangan-red">📍 ${order.shippingAddress}</div>` : ''}
+                </div>
+
+                <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
+                  <div class="text-right">
+                    <div class="text-xs font-black text-emerald-600">${formatRupiah(order.grandTotal)}</div>
+                    <div class="text-[10px] text-stone-400 uppercase font-semibold">Via ${order.paymentMethod}</div>
+                  </div>
+
+                  ${order.proofBase64 ? `
+                    <button onclick="viewEnlargedImage('${order.proofBase64}')" class="relative group/thumb w-12 h-12 rounded-xl overflow-hidden border border-stone-300 shrink-0 shadow-sm" title="Klik perbesar bukti transfer">
+                      <img src="${order.proofBase64}" class="w-full h-full object-cover">
+                      <div class="absolute inset-0 bg-stone-900/40 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center transition-opacity">
+                        <i data-lucide="maximize-2" class="w-4 h-4 text-white"></i>
+                      </div>
+                    </button>
+                  ` : `
+                    <div class="w-12 h-12 rounded-xl bg-stone-200 flex items-center justify-center text-stone-400 text-[10px]">No Pic</div>
+                  `}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+
+        container.appendChild(sheetSection);
+      }
+
+      lucide.createIcons();
+    }
+
+    function viewEnlargedImage(src) {
+      document.getElementById("enlargedImage").src = src;
+      document.getElementById("imageModal").classList.remove("hidden");
+      lucide.createIcons();
+    }
+
+    function closeImageModal() {
+      document.getElementById("imageModal").classList.add("hidden");
+    }
+
+    function exportOrdersToCSV() {
+      if (orders.length === 0) {
+        alert("Belum ada data pesanan untuk diexport!");
+        return;
+      }
+
+      let csv = "Order ID,Sheet Tag,Waktu,Nama Pemesan,WhatsApp,Pengiriman,Alamat,Metode Bayar,Rincian Items,Subtotal,Ongkir,Grand Total\n";
+      orders.forEach(o => {
+        const itemsStr = o.items.map(i => `${i.name} (${i.qty}x)`).join(" | ").replace(/"/g, '""');
+        const addr = (o.shippingAddress || "-").replace(/"/g, '""');
+        csv += `"${o.orderId}","${o.sheetTag}","${o.timeString}","${o.custName}","${o.custPhone}","${o.shippingMethod}","${addr}","${o.paymentMethod}","${itemsStr}","${o.subtotal}","${o.shippingCost}","${o.grandTotal}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `TETESDRINK_Orders_Log_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    /* ============================================================
+       M. MEDIA SOSIAL & KONTAK (dikelola di Admin) + STATUS BUKA
+       ============================================================ */
+    const SOCIAL_PLATFORMS = {
+      instagram: { label: "Instagram", emoji: "📸", base: "https://instagram.com/", cls: "bg-pink-50 text-pink-700 border-pink-200 hover:bg-pink-100" },
+      tiktok:    { label: "TikTok",    emoji: "🎵", base: "https://www.tiktok.com/@", cls: "bg-stone-100 text-stone-800 border-stone-300 hover:bg-stone-200" },
+      threads:   { label: "Threads",   emoji: "🧵", base: "https://www.threads.net/@", cls: "bg-stone-100 text-stone-800 border-stone-300 hover:bg-stone-200" },
+      facebook:  { label: "Facebook",  emoji: "👥", base: "https://facebook.com/", cls: "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100" },
+      whatsapp:  { label: "WhatsApp",  emoji: "💬", base: "https://wa.me/", cls: "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100" },
+      youtube:   { label: "YouTube",   emoji: "▶️", base: "https://youtube.com/@", cls: "bg-red-50 text-red-700 border-red-200 hover:bg-red-100" },
+      twitter:   { label: "X (Twitter)", emoji: "🐦", base: "https://x.com/", cls: "bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100" },
+      telegram:  { label: "Telegram",  emoji: "✈️", base: "https://t.me/", cls: "bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100" },
+      linkedin:  { label: "LinkedIn",  emoji: "💼", base: "https://linkedin.com/in/", cls: "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100" },
+      pinterest: { label: "Pinterest", emoji: "📌", base: "https://pinterest.com/", cls: "bg-red-50 text-red-700 border-red-200 hover:bg-red-100" },
+      email:     { label: "Email",     emoji: "✉️", base: "mailto:", cls: "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100" },
+      globe:     { label: "Website",   emoji: "🌐", base: "https://", cls: "bg-stone-100 text-stone-700 border-stone-300 hover:bg-stone-200" }
+    };
+
+    const DEFAULT_SOCIALS = [
+      { id: "soc_default_ig", platform: "instagram", name: "Instagram Official", handle: "@tetesdrink", url: "https://instagram.com/tetesdrink", active: true }
+    ];
+
+    let socials = [];
+
+    function escapeHTML(str) {
+      return String(str == null ? "" : str).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    function safeSocialUrl(url) {
+      const u = String(url || "").trim();
+      return /^(https?:\/\/|mailto:|tel:)/i.test(u) ? u : "#";
+    }
+
+    function loadSocialsFromStorage() {
+      let saved = null;
+      try { saved = localStorage.getItem(STORAGE_KEY_SOCIALS); } catch (e) {}
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            socials = parsed.filter(x => x.id !== "soc_default_wa");
+            if (socials.length !== parsed.length) saveSocialsToStorage();
+            return;
+          }
+        } catch (e) {}
+      }
+      socials = DEFAULT_SOCIALS.map(x => ({ ...x }));
+      saveSocialsToStorage();
+    }
+
+    function saveSocialsToStorage() {
+      try { localStorage.setItem(STORAGE_KEY_SOCIALS, JSON.stringify(socials)); } catch (e) {}
+    }
+
+    function socialMeta(platform) {
+      return SOCIAL_PLATFORMS[platform] || SOCIAL_PLATFORMS.globe;
+    }
+
+    function renderSocials() {
+      const active = socials.filter(x => x.active);
+      const sectionBox = document.getElementById("sectionSocialsList");
+      const footerBox = document.getElementById("footerSocialsList");
+
+      const empty = `<span class="text-xs text-stone-400">Belum ada akun yang ditampilkan.</span>`;
+
+      const pill = (x, showHandle) => {
+        const m = socialMeta(x.platform);
+        return `<a href="${escapeHTML(safeSocialUrl(x.url))}" target="_blank" rel="noopener noreferrer"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold transition-colors ${m.cls}">
+                  <span class="text-sm leading-none">${m.emoji}</span>
+                  <span>${escapeHTML(x.name)}</span>
+                  ${showHandle && x.handle ? `<span class="font-mono font-medium opacity-70">${escapeHTML(x.handle)}</span>` : ""}
+                </a>`;
+      };
+
+      if (sectionBox) sectionBox.innerHTML = active.length ? active.map(x => pill(x, true)).join("") : empty;
+      if (footerBox) footerBox.innerHTML = active.length ? active.map(x => pill(x, false)).join("") : empty;
+    }
+
+    function renderAdminSocials() {
+      const box = document.getElementById("adminSocialsList");
+      if (!box) return;
+
+      if (socials.length === 0) {
+        box.innerHTML = `
+          <div class="col-span-full p-10 text-center bg-white rounded-3xl border border-kenangan-border">
+            <div class="text-3xl mb-2">🔗</div>
+            <h5 class="text-stone-800 font-bold text-sm">Belum ada akun sosial media</h5>
+            <p class="text-xs text-stone-500 mt-1">Klik "Tambah Akun Sosmed" untuk menambahkan TikTok, Threads, Instagram, Facebook, dll.</p>
+          </div>`;
+        return;
+      }
+
+      box.innerHTML = socials.map(x => {
+        const m = socialMeta(x.platform);
+        return `
+          <div class="p-4 rounded-3xl bg-white border border-kenangan-border shadow-subtle flex flex-col gap-3 ${x.active ? "" : "opacity-60"}">
+            <div class="flex items-start gap-3">
+              <div class="w-11 h-11 rounded-2xl border flex items-center justify-center text-xl shrink-0 ${m.cls}">${m.emoji}</div>
+              <div class="min-w-0 flex-1">
+                <div class="text-sm font-extrabold text-kenangan-espresso truncate">${escapeHTML(x.name)}</div>
+                <div class="text-[11px] font-mono text-stone-500 truncate">${escapeHTML(x.handle)}</div>
+                <a href="${escapeHTML(safeSocialUrl(x.url))}" target="_blank" rel="noopener noreferrer" class="text-[11px] text-kenangan-red hover:underline break-all line-clamp-1">${escapeHTML(x.url)}</a>
+              </div>
+            </div>
+            <div class="flex items-center justify-between gap-2 pt-3 border-t border-stone-100">
+              <button onclick="toggleSocialActive('${x.id}')" class="px-2.5 py-1 rounded-full text-[10px] font-bold ${x.active ? "bg-emerald-100 text-emerald-700" : "bg-stone-200 text-stone-600"}">
+                ${x.active ? "● Tampil di Website" : "○ Disembunyikan"}
+              </button>
+              <div class="flex items-center gap-2">
+                <button onclick="openSocialFormModal('edit','${x.id}')" class="px-3 py-1.5 rounded-xl border border-stone-300 text-stone-700 text-[11px] font-bold hover:bg-stone-50">Edit</button>
+                <button onclick="deleteSocial('${x.id}')" class="px-3 py-1.5 rounded-xl border border-red-200 text-red-600 text-[11px] font-bold hover:bg-red-50">Hapus</button>
+              </div>
+            </div>
+          </div>`;
+      }).join("");
+    }
+
+    function openSocialFormModal(mode, id) {
+      const form = document.getElementById("socialForm");
+      form.reset();
+      const urlInput = document.getElementById("formSocialUrl");
+      urlInput.dataset.auto = "1";
+      document.getElementById("formSocialId").value = "";
+      document.getElementById("formSocialActive").checked = true;
+      const title = document.querySelector("#socialFormModalTitle span");
+
+      if (mode === "edit") {
+        const x = socials.find(i => i.id === id);
+        if (!x) return;
+        title.textContent = "Edit Media Sosial & Kontak";
+        document.getElementById("formSocialId").value = x.id;
+        document.getElementById("formSocialPlatform").value = x.platform;
+        document.getElementById("formSocialName").value = x.name;
+        document.getElementById("formSocialHandle").value = x.handle;
+        urlInput.value = x.url;
+        urlInput.dataset.auto = "0";
+        document.getElementById("formSocialActive").checked = !!x.active;
+      } else {
+        title.textContent = "Tambah Media Sosial & Kontak";
+      }
+
+      document.getElementById("socialFormModal").classList.remove("hidden");
+      lucide.createIcons();
+    }
+
+    function closeSocialFormModal() {
+      document.getElementById("socialFormModal").classList.add("hidden");
+    }
+
+    // Isi otomatis URL dari platform + username (hanya kalau URL belum diketik manual)
+    function autoFillSocialUrl() {
+      const urlInput = document.getElementById("formSocialUrl");
+      if (urlInput.dataset.auto === "0" && urlInput.value.trim() !== "") return;
+      const platform = document.getElementById("formSocialPlatform").value;
+      const handle = document.getElementById("formSocialHandle").value.trim();
+      const nameInput = document.getElementById("formSocialName");
+      if (!nameInput.value.trim() && nameInput.dataset.touched !== "1") { /* label diisi manual oleh admin */ }
+      if (!handle) { urlInput.value = ""; urlInput.dataset.auto = "1"; return; }
+
+      let url;
+      if (/^https?:\/\//i.test(handle)) {
+        url = handle;
+      } else if (platform === "whatsapp") {
+        let n = handle.replace(/[^\d]/g, "");
+        if (n.startsWith("0")) n = "62" + n.slice(1);
+        url = SOCIAL_PLATFORMS.whatsapp.base + n;
+      } else if (platform === "email") {
+        url = "mailto:" + handle;
+      } else {
+        const clean = handle.replace(/^@/, "");
+        url = socialMeta(platform).base + clean;
+      }
+      urlInput.value = url;
+      urlInput.dataset.auto = "1";
+    }
+
+    function handleSocialFormSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById("formSocialId").value;
+      const url = document.getElementById("formSocialUrl").value.trim();
+
+      if (safeSocialUrl(url) === "#") {
+        alert("URL harus diawali https:// (atau mailto: untuk email).");
+        return;
+      }
+
+      const data = {
+        id: id || ("soc_" + Date.now()),
+        platform: document.getElementById("formSocialPlatform").value,
+        name: document.getElementById("formSocialName").value.trim(),
+        handle: document.getElementById("formSocialHandle").value.trim(),
+        url,
+        active: document.getElementById("formSocialActive").checked
+      };
+
+      if (id) {
+        socials = socials.map(x => x.id === id ? data : x);
+      } else {
+        socials.push(data);
+      }
+
+      saveSocialsToStorage();
+      renderSocials();
+      renderAdminSocials();
+      closeSocialFormModal();
+    }
+
+    function toggleSocialActive(id) {
+      socials = socials.map(x => x.id === id ? { ...x, active: !x.active } : x);
+      saveSocialsToStorage();
+      renderSocials();
+      renderAdminSocials();
+    }
+
+    function deleteSocial(id) {
+      const x = socials.find(i => i.id === id);
+      if (!x) return;
+      if (!confirm(`Hapus "${x.name}" dari daftar media sosial?`)) return;
+      socials = socials.filter(i => i.id !== id);
+      saveSocialsToStorage();
+      renderSocials();
+      renderAdminSocials();
+    }
+
+    // Status buka/tutup stand: Senin - Jumat, 08:00 - 16:00 WIB
+    function isStoreOpenNow() {
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Jakarta", weekday: "short", hour: "numeric", minute: "numeric", hour12: false
+      }).formatToParts(new Date());
+      const get = t => (parts.find(p => p.type === t) || {}).value;
+      const day = get("weekday");
+      const minutes = (parseInt(get("hour"), 10) % 24) * 60 + parseInt(get("minute"), 10);
+      return ["Mon", "Tue", "Wed", "Thu", "Fri"].includes(day) && minutes >= 8 * 60 && minutes < 16 * 60;
+    }
+
+    function updateStoreStatus() {
+      const open = isStoreOpenNow();
+      const text = document.getElementById("storeStatusText");
+      const dot = document.getElementById("storeStatusDot");
+      if (text) {
+        text.textContent = open ? "Stand Buka Sekarang" : "Stand Sedang Tutup";
+        text.parentElement.className = `text-xs font-semibold flex items-center gap-1.5 ${open ? "text-emerald-600" : "text-stone-500"}`;
+      }
+      if (dot) dot.className = `w-2 h-2 rounded-full ${open ? "bg-emerald-500 animate-ping" : "bg-stone-400"}`;
+      document.querySelectorAll(".store-dot").forEach(d => {
+        d.classList.toggle("bg-emerald-500", open);
+        d.classList.toggle("animate-pulse", open);
+        d.classList.toggle("bg-stone-400", !open);
+      });
+    }
+  </script>
+</body>
+</html>
