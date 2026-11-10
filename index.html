@@ -1527,27 +1527,21 @@
 
     async function loadProductsFromStorage() {
   try {
-    const res = await fetch(GOOGLE_SHEETS_API_URL);
+    const res = await fetch(GOOGLE_SHEETS_API_URL + '?t=' + Date.now());
     const data = await res.json();
-    
-    // Fleksibel baca data array langsung atau dari properti data/products
+
     let rawList = [];
     if (Array.isArray(data)) {
       rawList = data;
-    } else if (data && Array.isArray(data.products)) {
-      rawList = data.products;
-    } else if (data && Array.isArray(data.data)) {
-      rawList = data.data;
+    } else if (data && typeof data === 'object') {
+      rawList = data.products || data.data || data.items || [];
     }
 
-    // Jika di Sheets ADA data (meskipun CUMA 1 PRODUK)
     if (rawList && rawList.length > 0) {
       products = rawList.map((item, idx) => {
-        // Ambil harga & stok dari semua nama kolom yang mungkin ada di Sheets
         let rawP = item.price ?? item.Price ?? item.harga ?? item.Harga ?? item.PRICE ?? item.HARGA ?? 0;
         let rawS = item.stock ?? item.Stock ?? item.stok ?? item.Stok ?? item.STOCK ?? item.STOK ?? 0;
 
-        // Ekstrak angka murni (aman dari titik, koma, huruf, space)
         let cleanP = parseInt(String(rawP).replace(/[^0-9]/g, ''), 10) || 0;
         let cleanS = parseInt(String(rawS).replace(/[^0-9]/g, ''), 10) || 0;
 
@@ -1567,7 +1561,6 @@
       renderProductCatalog();
       return;
     } else {
-      // Jika di Sheets KOSONG, kosongkan tampilan di web
       products = [];
       saveProductsToStorage();
       renderProductCatalog();
@@ -1575,7 +1568,6 @@
     }
   } catch(e) {
     console.error("Gagal mengambil data dari Google Sheets:", e);
-    // Jika koneksi error/putus, ambil data cache tersimpan
     const saved = localStorage.getItem(STORAGE_KEY_PRODUCTS);
     if (saved) {
       try { products = JSON.parse(saved); } catch(err) { products = []; }
