@@ -1446,7 +1446,6 @@
     /* ============================================================
        B. STORAGE KEYS & APP STATE
        ============================================================ */
-    const GOOGLE_SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbz4oSsmIo79ef3HdUH88qpdB6mUJnyb6P-Vn7Wv8xPqq1m8Fl9R_dl3A5DcaNNC37Qcyg/exec";
     const STORAGE_KEY_PRODUCTS = "tetesdrink_catalog_v3";
     const STORAGE_KEY_ORDERS = "tetesdrink_orders_v3";
     const STORAGE_KEY_BANNERS = "tetesdrink_banners_v4";
@@ -1473,12 +1472,11 @@
        C. INITIALIZATION
        ============================================================ */
     window.addEventListener("DOMContentLoaded", () => {
-  localStorage.removeItem(STORAGE_KEY_PRODUCTS); // Hapus cache lokal lama yang corrupt
-  loadBrandingFromStorage();
-  loadBannersFromStorage();
-  loadProductsFromStorage();
-  loadOrdersFromStorage();
-  loadSocialsFromStorage();
+      loadBrandingFromStorage();
+      loadBannersFromStorage();
+      loadProductsFromStorage();
+      loadOrdersFromStorage();
+      loadSocialsFromStorage();
 
       renderBranding();
       renderSocials();
@@ -1525,67 +1523,15 @@
       localStorage.setItem(STORAGE_KEY_BANNERS, JSON.stringify(banners));
     }
 
-    async function loadProductsFromStorage() {
-  try {
-    const res = await fetch(GOOGLE_SHEETS_API_URL + '?t=' + Date.now());
-    const data = await res.json();
-
-    let rawList = [];
-    if (Array.isArray(data)) {
-      rawList = data;
-    } else if (data && typeof data === 'object') {
-      rawList = data.products || data.data || data.items || [];
+    function loadProductsFromStorage() {
+      const saved = localStorage.getItem(STORAGE_KEY_PRODUCTS);
+      if (saved) {
+        try { products = JSON.parse(saved); } catch(e) { products = [...DEFAULT_PRODUCTS]; }
+      } else {
+        products = [...DEFAULT_PRODUCTS];
+        saveProductsToStorage();
+      }
     }
-
-    if (rawList && rawList.length > 0) {
-      products = rawList.map((item, idx) => {
-        let rawP = item.price ?? item.Price ?? item.harga ?? item.Harga ?? item.PRICE ?? item.HARGA ?? 0;
-        let rawS = item.stock ?? item.Stock ?? item.stok ?? item.Stok ?? item.STOCK ?? item.STOK ?? 0;
-
-        let cleanP = parseInt(String(rawP).replace(/[^0-9]/g, ''), 10) || 0;
-        let cleanS = parseInt(String(rawS).replace(/[^0-9]/g, ''), 10) || 0;
-
-        return {
-          id: String(item.id || item.ID || 'prod-' + (idx + 1)),
-          name: String(item.name || item.Name || item.nama || item.Nama || 'Varian Minuman'),
-          category: String(item.category || item.Category || item.kategori || item.Kategori || 'Original'),
-          price: cleanP,
-          stock: cleanS,
-          emoji: String(item.emoji || item.Emoji || '🥤'),
-          image: String(item.image || item.Image || item.gambar || item.Gambar || 'https://images.unsplash.com/photo-1541658016709-82535e94bc69?auto=format&fit=crop&w=600&q=80'),
-          description: String(item.description || item.Description || item.deskripsi || item.Deskripsi || '')
-        };
-      });
-
-      saveProductsToStorage();
-      renderProductCatalog();
-      return;
-    } else {
-      products = [];
-      saveProductsToStorage();
-      renderProductCatalog();
-      return;
-    }
-  } catch(e) {
-    console.error("Gagal mengambil data dari Google Sheets:", e);
-    const saved = localStorage.getItem(STORAGE_KEY_PRODUCTS);
-    if (saved) {
-      try { products = JSON.parse(saved); } catch(err) { products = []; }
-    } else {
-      products = [];
-    }
-    renderProductCatalog();
-  }
-}
-
-  const saved = localStorage.getItem(STORAGE_KEY_PRODUCTS);
-  if (saved) {
-    try { products = JSON.parse(saved); } catch(err) { products = []; }
-  } else {
-    products = [];
-  }
-  renderProductCatalog();
-}
 
     function saveProductsToStorage() {
       localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(products));
@@ -2350,11 +2296,6 @@
       orders.unshift(newOrder);
       saveOrdersToStorage();
 
-      fetch(GOOGLE_SHEETS_API_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "new_order", order: newOrder })
-      });
-
       cart = {};
       proofBase64 = "";
       updateCartBadge();
@@ -2549,18 +2490,12 @@
     }
 
     function inlineAdjustStock(productId, delta) {
-  const prod = products.find(p => p.id === productId);
-  if (!prod) return;
-  const newStock = Math.max(0, (parseInt(prod.stock) || 0) + delta);
-  prod.stock = newStock;
-  saveProductsToStorage();
-  refreshAdminData();
-
-  fetch(GOOGLE_SHEETS_API_URL, {
-    method: "POST",
-    body: JSON.stringify({ action: "update_stock", productId: productId, newStock: newStock })
-  });
-}
+      const prod = products.find(p => p.id === productId);
+      if (!prod) return;
+      prod.stock = Math.max(0, (parseInt(prod.stock) || 0) + delta);
+      saveProductsToStorage();
+      refreshAdminData();
+    }
 
     function inlineUpdateStockInput(productId, value) {
       const prod = products.find(p => p.id === productId);
