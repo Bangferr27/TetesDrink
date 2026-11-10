@@ -1529,41 +1529,62 @@
   try {
     const res = await fetch(GOOGLE_SHEETS_API_URL);
     const data = await res.json();
-
+    
+    // Fleksibel baca data array langsung atau dari properti data/products
     let rawList = [];
     if (Array.isArray(data)) {
       rawList = data;
     } else if (data && Array.isArray(data.products)) {
       rawList = data.products;
+    } else if (data && Array.isArray(data.data)) {
+      rawList = data.data;
     }
 
-    if (rawList.length > 0) {
+    // Jika di Sheets ADA data (meskipun CUMA 1 PRODUK)
+    if (rawList && rawList.length > 0) {
       products = rawList.map((item, idx) => {
-        let rawPrice = item.price ?? item.Price ?? item.harga ?? item.Harga ?? item.PRICE ?? 0;
-        let rawStock = item.stock ?? item.Stock ?? item.stok ?? item.Stok ?? item.STOCK ?? 0;
+        // Ambil harga & stok dari semua nama kolom yang mungkin ada di Sheets
+        let rawP = item.price ?? item.Price ?? item.harga ?? item.Harga ?? item.PRICE ?? item.HARGA ?? 0;
+        let rawS = item.stock ?? item.Stock ?? item.stok ?? item.Stok ?? item.STOCK ?? item.STOK ?? 0;
 
-        let numPrice = Number(rawPrice) || parseInt(rawPrice) || 0;
-        let numStock = Number(rawStock) || parseInt(rawStock) || 0;
+        // Ekstrak angka murni (aman dari titik, koma, huruf, space)
+        let cleanP = parseInt(String(rawP).replace(/[^0-9]/g, ''), 10) || 0;
+        let cleanS = parseInt(String(rawS).replace(/[^0-9]/g, ''), 10) || 0;
 
         return {
           id: String(item.id || item.ID || 'prod-' + (idx + 1)),
-          name: String(item.name || item.Name || 'Tanpa Nama'),
-          category: String(item.category || item.Category || 'Original'),
-          price: numPrice,
-          stock: numStock,
+          name: String(item.name || item.Name || item.nama || item.Nama || 'Varian Minuman'),
+          category: String(item.category || item.Category || item.kategori || item.Kategori || 'Original'),
+          price: cleanP,
+          stock: cleanS,
           emoji: String(item.emoji || item.Emoji || '🥤'),
-          image: String(item.image || item.Image || ''),
-          description: String(item.description || item.Description || '')
+          image: String(item.image || item.Image || item.gambar || item.Gambar || 'https://images.unsplash.com/photo-1541658016709-82535e94bc69?auto=format&fit=crop&w=600&q=80'),
+          description: String(item.description || item.Description || item.deskripsi || item.Deskripsi || '')
         };
       });
 
       saveProductsToStorage();
       renderProductCatalog();
       return;
+    } else {
+      // Jika di Sheets KOSONG, kosongkan tampilan di web
+      products = [];
+      saveProductsToStorage();
+      renderProductCatalog();
+      return;
     }
   } catch(e) {
-    console.error("Gagal sync data Google Sheets:", e);
+    console.error("Gagal mengambil data dari Google Sheets:", e);
+    // Jika koneksi error/putus, ambil data cache tersimpan
+    const saved = localStorage.getItem(STORAGE_KEY_PRODUCTS);
+    if (saved) {
+      try { products = JSON.parse(saved); } catch(err) { products = []; }
+    } else {
+      products = [];
+    }
+    renderProductCatalog();
   }
+}
 
   const saved = localStorage.getItem(STORAGE_KEY_PRODUCTS);
   if (saved) {
