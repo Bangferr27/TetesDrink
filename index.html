@@ -1525,6 +1525,16 @@
     }
 
     async function loadProductsFromStorage() {
+  // 1. Tampilkan data lokal / default dulu instan biar NGGAK KEDIP HILANG
+  const saved = localStorage.getItem(STORAGE_KEY_PRODUCTS);
+  if (saved) { 
+    try { products = JSON.parse(saved); } catch(err) { products = [...DEFAULT_PRODUCTS]; } 
+  } else {
+    products = [...DEFAULT_PRODUCTS];
+  }
+  renderProductCatalog(); // Langsung render tampilan awal tanpa nunggu server
+
+  // 2. Ambil data terbaru dari Google Sheets di background lalu update pelan-pelan
   try {
     const res = await fetch(GOOGLE_SHEETS_API_URL);
     const data = await res.json();
@@ -1539,18 +1549,12 @@
         image: String(item.image || item.Image || ''),
         description: String(item.description || item.Description || '')
       }));
-      // AUTO RENDER HOMEPAGE CUSTOMER
-      renderProductCatalog();
+      
+      saveProductsToStorage();
+      renderProductCatalog(); // Update stok akurat dari Google Sheets
     }
   } catch(e) {
-    console.error("Gagal load stok Google Sheets", e);
-    const saved = localStorage.getItem(STORAGE_KEY_PRODUCTS);
-    if (saved) { 
-      try { products = JSON.parse(saved); } catch(err) { products = [...DEFAULT_PRODUCTS]; } 
-    } else {
-      products = [...DEFAULT_PRODUCTS];
-    }
-    renderProductCatalog();
+    console.error("Gagal sync dengan Google Sheets, pakai data lokal", e);
   }
 }
 
