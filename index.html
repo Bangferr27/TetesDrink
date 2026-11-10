@@ -1525,55 +1525,52 @@
     }
 
     async function loadProductsFromStorage() {
-  // 1. Tampilkan data lokal, tapi abaikan jika harga 0 (corrupt)
-  const saved = localStorage.getItem(STORAGE_KEY_PRODUCTS);
-  if (saved) { 
-    try { 
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].price > 0) {
-        products = parsed;
-      } else {
-        products = [...DEFAULT_PRODUCTS]; 
-      }
-    } catch(err) { 
-      products = [...DEFAULT_PRODUCTS]; 
-    } 
-  } else {
-    products = [...DEFAULT_PRODUCTS];
-  }
-  renderProductCatalog();
-
-  // 2. Ambil data harga asli dari Google Sheets
   try {
     const res = await fetch(GOOGLE_SHEETS_API_URL);
     const data = await res.json();
-    const rawList = Array.isArray(data) ? data : (data.products || []);
-
-    if (Array.isArray(rawList) && rawList.length > 0) {
-      products = rawList.map(item => {
-        const rawP = item.price ?? item.Price ?? item.harga ?? item.Harga ?? 0;
-        const rawS = item.stock ?? item.Stock ?? item.stok ?? item.Stok ?? 0;
-
-        const cleanPrice = parseInt(String(rawP).replace(/[^0-9]/g, '')) || 0;
-        const cleanStock = parseInt(String(rawS).replace(/[^0-9]/g, '')) || 0;
-
-        return {
-          id: String(item.id || item.ID || 'prod-1'),
-          name: String(item.name || item.Name || ''),
-          category: String(item.category || item.Category || 'Original'),
-          price: cleanPrice,
-          stock: cleanStock,
-          emoji: String(item.emoji || item.Emoji || '🥤'),
-          image: String(item.image || item.Image || ''),
-          description: String(item.description || item.Description || '')
-        };
-      });
-
-      saveProductsToStorage();
-      renderProductCatalog();
+    
+    // Ambil array produk dari respon Apps Script
+    let rawList = [];
+    if (Array.isArray(data)) {
+      rawList = data;
+    } else if (data && Array.isArray(data.products)) {
+      rawList = data.products;
     }
+
+    // Pemetaan data murni dari Google Sheets (tanpa fallback ke default)
+    products = rawList.map(item => {
+      const rawP = item.price ?? item.Price ?? item.harga ?? item.Harga ?? 0;
+      const rawS = item.stock ?? item.Stock ?? item.stok ?? item.Stok ?? 0;
+
+      const cleanPrice = parseInt(String(rawP).replace(/[^0-9]/g, '')) || 0;
+      const cleanStock = parseInt(String(rawS).replace(/[^0-9]/g, '')) || 0;
+
+      return {
+        id: String(item.id || item.ID || 'prod-1'),
+        name: String(item.name || item.Name || ''),
+        category: String(item.category || item.Category || 'Original'),
+        price: cleanPrice,
+        stock: cleanStock,
+        emoji: String(item.emoji || item.Emoji || '🥤'),
+        image: String(item.image || item.Image || ''),
+        description: String(item.description || item.Description || '')
+      };
+    });
+    
+    // Simpan data murni dari Sheets ke storage & render tampilan
+    saveProductsToStorage();
+    renderProductCatalog();
+
   } catch(e) {
     console.error("Gagal sync data Google Sheets:", e);
+    // Kalau koneksi internet putus total, baru baca cache lokal terakhir yang tersimpan
+    const saved = localStorage.getItem(STORAGE_KEY_PRODUCTS);
+    if (saved) {
+      try { products = JSON.parse(saved); } catch(err) { products = []; }
+    } else {
+      products = [];
+    }
+    renderProductCatalog();
   }
 }
 
