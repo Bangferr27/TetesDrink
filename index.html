@@ -1446,7 +1446,7 @@
     /* ============================================================
        B. STORAGE KEYS & APP STATE
        ============================================================ */
-    const GOOGLE_SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbxuiGiW1kG7EYtaGXrDWuohRFKeeS_4wM_IMn_od2WmTaaHSxp60JxDPhVJtOPIeGKS7Q/exec";
+    const GOOGLE_SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbz4oSsmIo79ef3HdUH88qpdB6mUJnyb6P-Vn7Wv8xPqq1m8Fl9R_dl3A5DcaNNC37Qcyg/exec";
     const STORAGE_KEY_PRODUCTS = "tetesdrink_catalog_v3";
     const STORAGE_KEY_ORDERS = "tetesdrink_orders_v3";
     const STORAGE_KEY_BANNERS = "tetesdrink_banners_v4";
@@ -1525,26 +1525,32 @@
     }
 
     async function loadProductsFromStorage() {
-  // 1. Tampilkan data lokal instan
+  // 1. Tampilkan data lokal, tapi abaikan jika harga 0 (corrupt)
   const saved = localStorage.getItem(STORAGE_KEY_PRODUCTS);
   if (saved) { 
-    try { products = JSON.parse(saved); } catch(err) { products = [...DEFAULT_PRODUCTS]; } 
+    try { 
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].price > 0) {
+        products = parsed;
+      } else {
+        products = [...DEFAULT_PRODUCTS]; 
+      }
+    } catch(err) { 
+      products = [...DEFAULT_PRODUCTS]; 
+    } 
   } else {
     products = [...DEFAULT_PRODUCTS];
   }
   renderProductCatalog();
 
-  // 2. Ambil data dari Apps Script & konversi harga secara presisi
+  // 2. Ambil data harga asli dari Google Sheets
   try {
     const res = await fetch(GOOGLE_SHEETS_API_URL);
     const data = await res.json();
-    
-    // Jika format return dari Apps Script berupa array produk langsung
     const rawList = Array.isArray(data) ? data : (data.products || []);
 
-    if (rawList.length > 0) {
+    if (Array.isArray(rawList) && rawList.length > 0) {
       products = rawList.map(item => {
-        // Ambil nilai harga dari berbagai kemungkinan nama properti
         const rawP = item.price ?? item.Price ?? item.harga ?? item.Harga ?? 0;
         const rawS = item.stock ?? item.Stock ?? item.stok ?? item.Stok ?? 0;
 
@@ -1562,12 +1568,12 @@
           description: String(item.description || item.Description || '')
         };
       });
-      
+
       saveProductsToStorage();
-      renderProductCatalog(); // Render ulang tampilan web dengan harga Rp 8.000
+      renderProductCatalog();
     }
   } catch(e) {
-    console.error("Gagal sync dengan Google Sheets:", e);
+    console.error("Gagal sync data Google Sheets:", e);
   }
 }
 
