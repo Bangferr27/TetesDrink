@@ -1154,12 +1154,18 @@
               <i data-lucide="table" class="w-4 h-4 text-kenangan-red"></i>
               Sheet Log Harian Terorganisir
             </h4>
-            <p class="text-xs text-kenangan-textMuted mt-0.5">Pesanan otomatis dikelompokkan berdasarkan Sheet Harian Baru (format Indonesia).</p>
+            <p class="text-xs text-kenangan-textMuted mt-0.5">Log ini otomatis tersinkron langsung dengan Spreadsheet Google Anda. Penghapusan data hanya dapat dilakukan di Spreadsheet.</p>
           </div>
-          <button onclick="exportOrdersToCSV()" class="px-3.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 border border-stone-300 text-kenangan-espresso text-xs font-bold transition-all flex items-center gap-1.5">
-            <i data-lucide="download" class="w-3.5 h-3.5"></i>
-            <span>Export CSV Log</span>
-          </button>
+          <div class="flex items-center gap-2">
+            <button onclick="syncOrdersFromSheet()" class="px-3.5 py-1.5 rounded-xl border border-emerald-300 text-emerald-700 hover:bg-emerald-50 text-xs font-bold bg-white transition-all flex items-center gap-1.5" title="Muat ulang log dari Google Spreadsheet">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+              <span>Sync dari Sheet</span>
+            </button>
+            <button onclick="exportOrdersToCSV()" class="px-3.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 border border-stone-300 text-kenangan-espresso text-xs font-bold transition-all flex items-center gap-1.5">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              <span>Export CSV Log</span>
+            </button>
+          </div>
         </div>
 
         <div id="ordersListContainer" class="space-y-4">
@@ -1510,6 +1516,7 @@
 
       // ✅ Langsung sync dari Google Sheets saat halaman dibuka
       syncProductsFromSheet();
+      syncOrdersFromSheet();
     });
 
     /* ============================================================
@@ -1655,8 +1662,42 @@
         });
         const result = await res.json();
         console.log(`📋 Response Log Pesanan:`, result);
+        // Segera sync ulang log dari spreadsheet agar state web persis sama dengan spreadsheet
+        syncOrdersFromSheet();
       } catch (err) {
         console.warn("⚠️ Gagal mengirim log pesanan ke Sheet:", err.message);
+      }
+    }
+
+    let isSyncingOrders = false;
+    /**
+     * Sinkronkan data log pesanan dari Google Sheets "LOG PESANAN TETESDRINK"
+     * Jika pesanan dihapus di spreadsheet, maka di web otomatis ikut terhapus.
+     */
+    async function syncOrdersFromSheet() {
+      if (isSyncingOrders) return;
+      isSyncingOrders = true;
+
+      try {
+        const res = await fetch(`${ORDER_LOG_API_URL}?action=getOrders`, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        if (data && data.status === "success" && Array.isArray(data.orders)) {
+          orders = data.orders;
+          saveOrdersToStorage();
+          const ordersTab = document.getElementById("adminTabOrders");
+          if (ordersTab && !ordersTab.classList.contains("hidden")) {
+            renderAdminOrders();
+          }
+          const statOrders = document.getElementById("statTotalOrders");
+          if (statOrders) statOrders.textContent = orders.length;
+          console.log(`✅ Berhasil sinkron ${orders.length} log pesanan dari Spreadsheet`);
+        }
+      } catch (err) {
+        console.warn("⚠️ Belum dapat mengambil log dari Sheet (menggunakan cache lokal):", err.message);
+      } finally {
+        isSyncingOrders = false;
       }
     }
 
@@ -2634,7 +2675,10 @@
       if (tab === "products") renderAdminProductTable();
       if (tab === "banners") renderAdminBannerList();
       if (tab === "branding") renderAdminBrandingTab();
-      if (tab === "orders") renderAdminOrders();
+      if (tab === "orders") {
+        renderAdminOrders();
+        syncOrdersFromSheet(); // Otomatis sync dari Spreadsheet saat admin buka tab log pesanan
+      }
       if (tab === "socials") renderAdminSocials();
       lucide.createIcons();
     }
