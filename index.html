@@ -1477,7 +1477,7 @@
        Ganti SHEET_API_URL dengan URL Apps Script kamu jika berubah
        ============================================================ */
     const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbycCC1MQhAsBtOqtN2lm1fxh5-tLiHfOFrgF58Q9dFEaZLfowNcxOgwmvK1ufmbhyUQqw/exec";
-    const ORDER_LOG_API_URL = "https://script.google.com/macros/s/AKfycbzo9Qv6DF7LAJJuZKV5caXXMP5pwYjZ01irtWbimwiiFtPNdAhZc52Bl5PBUjTJu00z/exec";
+    const ORDER_LOG_API_URL = "https://script.google.com/macros/s/AKfycbx_r0nGIsLhn5kpNgy5sPjJNh3s0VsusRszsLAUjHPrVUKdf27ZZ2iHPtQ8Vtfo7fa0/exec";
     let isSyncingFromSheet = false;
 
     let products = [];
@@ -1688,8 +1688,23 @@
         });
         const result = await res.json();
         console.log(`📋 Response Log Pesanan:`, result);
-        // Segera sync ulang log dari spreadsheet agar state web persis sama dengan spreadsheet
-        syncOrdersFromSheet();
+
+        // Jika API berhasil upload foto ke Drive, update URL foto di local order agar tampil di web admin
+        if (result && result.proofUrl && result.proofUrl.indexOf("http") === 0) {
+          const driveImgUrl = result.proofUrl;
+          // Update order di array lokal dengan URL Drive (bisa langsung ditampilkan sebagai <img>)
+          const idx = orders.findIndex(o => o.orderId === order.orderId);
+          if (idx !== -1) {
+            orders[idx].proofBase64 = driveImgUrl;
+          }
+          try { saveOrdersToStorage(); } catch(e) {}
+          // Re-render admin jika sedang di tab log
+          const ordersTab = document.getElementById("adminTabOrders");
+          if (ordersTab && !ordersTab.classList.contains("hidden")) renderAdminOrders();
+        }
+
+        // Sync ulang dari spreadsheet setelah sedikit delay (beri waktu sheet selesai menulis)
+        setTimeout(() => syncOrdersFromSheet(), 2000);
       } catch (err) {
         console.warn("⚠️ Gagal mengirim log pesanan ke Sheet:", err.message);
       }
