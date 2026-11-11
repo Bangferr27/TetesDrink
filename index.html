@@ -1523,6 +1523,28 @@
        GOOGLE SHEETS SYNC FUNCTIONS
        ============================================================ */
 
+    /* ============================================================
+       IMAGE URL NORMALIZER (Mendukung Google Drive, Imgur, Web, Base64)
+       ============================================================ */
+    function normalizeImageUrl(url) {
+      if (!url) return "";
+      let u = String(url).trim();
+      
+      // Jika format Google Drive (view, edit, uc, open, atau file/d/...)
+      const driveMatch = u.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([a-zA-Z0-9_-]+)/i);
+      if (driveMatch && driveMatch[1]) {
+        return `https://lh3.googleusercontent.com/d/${driveMatch[1]}`;
+      }
+      
+      // Jika Google Drive dengan parameter id di query string
+      const idMatch = u.match(/[?&]id=([a-zA-Z0-9_-]+)/i);
+      if (u.includes("drive.google.com") && idMatch && idMatch[1]) {
+        return `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
+      }
+
+      return u;
+    }
+
     /**
      * Fetch produk dari Google Sheets via Apps Script doGet().
      * Jalankan saat init & bisa dipanggil manual oleh admin.
@@ -1545,17 +1567,21 @@
 
         // Mapping kolom spreadsheet -> format produk lokal
         // Kolom: id | name | category | price | stock | emoji | image | description
-        const fetched = sheetData.map(row => ({
-          id: String(row["id"] || row["Id"] || row["ID"] || "").trim(),
-          name: String(row["name"] || row["Name"] || "").trim(),
-          category: String(row["category"] || row["Category"] || "Original").trim(),
-          price: parseInt(row["price"] || row["Price"] || 0, 10),
-          stock: parseInt(row["stock"] || row["Stock"] || 0, 10),
-          emoji: String(row["emoji"] || row["Emoji"] || "🥤").trim(),
-          image: String(row["image"] || row["Image"] || "").trim() ||
-                 "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=600&q=80",
-          description: String(row["description"] || row["Description"] || "").trim()
-        })).filter(p => p.id && p.name); // abaikan baris tanpa id/name
+        const fetched = sheetData.map(row => {
+          const rawImage = String(row["image"] || row["Image"] || "").trim();
+          const cleanImage = normalizeImageUrl(rawImage) || "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=600&q=80";
+
+          return {
+            id: String(row["id"] || row["Id"] || row["ID"] || "").trim(),
+            name: String(row["name"] || row["Name"] || "").trim(),
+            category: String(row["category"] || row["Category"] || "Original").trim(),
+            price: parseInt(row["price"] || row["Price"] || 0, 10),
+            stock: parseInt(row["stock"] || row["Stock"] || 0, 10),
+            emoji: String(row["emoji"] || row["Emoji"] || "🥤").trim(),
+            image: cleanImage,
+            description: String(row["description"] || row["Description"] || "").trim()
+          };
+        }).filter(p => p.id && p.name); // abaikan baris tanpa id/name
 
         // Merge: pertahankan stok lokal yang sudah dikurangi pemesanan
         // Jika sheet punya stok lebih baru (admin update sheet), pakai sheet
@@ -1636,7 +1662,6 @@
      */
     async function pushOrderLogToSheet(order) {
       try {
-        // Jangan sertakan proofBase64 gambar raksasa ke sheet log agar tidak timeout/over-quota
         const orderData = {
           orderId: order.orderId,
           sheetTag: order.sheetTag,
@@ -1649,7 +1674,8 @@
           items: order.items,
           subtotal: order.subtotal,
           shippingCost: order.shippingCost,
-          grandTotal: order.grandTotal
+          grandTotal: order.grandTotal,
+          proofBase64: order.proofBase64 || "" // Kirim foto bukti pembayaran (sudah terkompres)
         };
 
         const res = await fetch(ORDER_LOG_API_URL, {
@@ -1684,7 +1710,11 @@
         const data = await res.json();
 
         if (data && data.status === "success" && Array.isArray(data.orders)) {
-          orders = data.orders;
+          // Normalisasi URL foto bukti pembayaran jika ada link Google Drive
+          orders = data.orders.map(o => ({
+            ...o,
+            proofBase64: normalizeImageUrl(o.proofBase64 || o.proofUrl || "")
+          }));
           saveOrdersToStorage();
           const ordersTab = document.getElementById("adminTabOrders");
           if (ordersTab && !ordersTab.classList.contains("hidden")) {
