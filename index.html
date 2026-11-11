@@ -1471,6 +1471,7 @@
        Ganti SHEET_API_URL dengan URL Apps Script kamu jika berubah
        ============================================================ */
     const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbycCC1MQhAsBtOqtN2lm1fxh5-tLiHfOFrgF58Q9dFEaZLfowNcxOgwmvK1ufmbhyUQqw/exec";
+    const ORDER_LOG_API_URL = "https://script.google.com/macros/s/AKfycbzo9Qv6DF7LAJJuZKV5caXXMP5pwYjZ01irtWbimwiiFtPNdAhZc52Bl5PBUjTJu00z/exec";
     let isSyncingFromSheet = false;
 
     let products = [];
@@ -1620,6 +1621,22 @@
         console.log(`🗑️ Produk ${productId} dihapus dari Sheet`);
       } catch (err) {
         console.warn("⚠️ Gagal hapus produk dari Sheet:", err.message);
+      }
+    }
+
+    /**
+     * Kirim data pesanan baru ke Google Sheets "LOG PESANAN TETESDRINK"
+     */
+    async function pushOrderLogToSheet(order) {
+      try {
+        await fetch(ORDER_LOG_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify(order)
+        });
+        console.log(`📋 Log pesanan ${order.orderId} terkirim ke Spreadsheet Log Pesanan`);
+      } catch (err) {
+        console.warn("⚠️ Gagal mengirim log pesanan ke Sheet:", err.message);
       }
     }
 
@@ -2450,6 +2467,9 @@
 
       orders.unshift(newOrder);
       saveOrdersToStorage();
+
+      // Kirim data pesanan ke Google Sheets "LOG PESANAN TETESDRINK"
+      pushOrderLogToSheet(newOrder);
 
       cart = {};
       proofBase64 = "";
