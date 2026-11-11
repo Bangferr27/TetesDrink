@@ -1629,12 +1629,32 @@
      */
     async function pushOrderLogToSheet(order) {
       try {
-        await fetch(ORDER_LOG_API_URL, {
+        // Jangan sertakan proofBase64 gambar raksasa ke sheet log agar tidak timeout/over-quota
+        const orderData = {
+          orderId: order.orderId,
+          sheetTag: order.sheetTag,
+          timeString: order.timeString,
+          custName: order.custName,
+          custPhone: order.custPhone,
+          shippingMethod: order.shippingMethod,
+          shippingAddress: order.shippingAddress,
+          paymentMethod: order.paymentMethod,
+          items: order.items,
+          subtotal: order.subtotal,
+          shippingCost: order.shippingCost,
+          grandTotal: order.grandTotal
+        };
+
+        const res = await fetch(ORDER_LOG_API_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain" },
-          body: JSON.stringify(order)
+          body: JSON.stringify({
+            action: "saveOrder",
+            order: orderData
+          })
         });
-        console.log(`📋 Log pesanan ${order.orderId} terkirim ke Spreadsheet Log Pesanan`);
+        const result = await res.json();
+        console.log(`📋 Response Log Pesanan:`, result);
       } catch (err) {
         console.warn("⚠️ Gagal mengirim log pesanan ke Sheet:", err.message);
       }
@@ -2387,13 +2407,17 @@
 
       const reader = new FileReader();
       reader.onload = (event) => {
-        proofBase64 = event.target.result;
-        document.getElementById("previewImg").src = proofBase64;
-        document.getElementById("previewFileName").textContent = file.name;
-        document.getElementById("uploadPrompt").classList.add("hidden");
-        document.getElementById("uploadPreview").classList.remove("hidden");
-        document.getElementById("errProofUpload").classList.add("hidden");
-        lucide.createIcons();
+        const raw = event.target.result;
+        // Kompres gambar bukti transfer agar muat di localStorage & Apps Script tidak over-quota
+        compressImageToDataUrl(raw, 800, 800, 0.7, (compressed) => {
+          proofBase64 = compressed;
+          document.getElementById("previewImg").src = proofBase64;
+          document.getElementById("previewFileName").textContent = file.name;
+          document.getElementById("uploadPrompt").classList.add("hidden");
+          document.getElementById("uploadPreview").classList.remove("hidden");
+          document.getElementById("errProofUpload").classList.add("hidden");
+          lucide.createIcons();
+        });
       };
       reader.readAsDataURL(file);
     }
@@ -2408,75 +2432,101 @@
     }
 
     function submitOrderFinal() {
-      if (!proofBase64) {
-        const err = document.getElementById("errProofUpload");
-        err.classList.remove("hidden");
-        err.scrollIntoView({ behavior: "smooth", block: "center" });
-        return;
-      }
-
-      const now = new Date();
-      const sheetTag = getIndonesianSheetTag(now);
-      const orderId = `TTS-${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
-
-      const custName = document.getElementById("custName").value.trim();
-      const custPhone = document.getElementById("custPhone").value.trim();
-      const deliveryAddress = selectedShipping === "delivery" ? document.getElementById("deliveryAddress").value.trim() : "-";
-      
-      const subtotal = getCartSubtotalPrice();
-      const shippingCost = selectedShipping === "delivery" ? 1000 : 0;
-      const grandTotal = subtotal + shippingCost;
-
-      // Auto Decrement Stok (lokal + push ke Google Sheets)
-      const orderItems = [];
-      for (const [id, qty] of Object.entries(cart)) {
-        const prod = products.find(p => p.id === id);
-        if (prod) {
-          prod.stock = Math.max(0, prod.stock - qty);
-          orderItems.push({
-            id: prod.id,
-            name: prod.name,
-            price: prod.price,
-            qty: qty,
-            subtotal: prod.price * qty
-          });
-          // Push stok baru ke Google Sheets
-          pushStockUpdateToSheet(prod.id, prod.stock);
+      try {
+        if (!proofBase64) {
+          const err = document.getElementById("errProofUpload");
+          if (err) {
+            err.classList.remove("hidden");
+            err.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+          return;
         }
+
+        const now = new Date();
+        const sheetTag = getIndonesianSheetTag(now);
+        const orderId = `TTS-${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+        const custName = (document.getElementById("custName")?.value || "").trim();
+        const custPhone = (document.getElementById("custPhone")?.value || "").trim();
+        const deliveryAddress = selectedShipping === "delivery" ? (document.getElementById("deliveryAddress")?.value || "").trim() : "-";
+        
+        const subtotal = getCartSubtotalPrice();
+        const shippingCost = selectedShipping === "delivery" ? 1000 : 0;
+        const grandTotal = subtotal + shippingCost;
+
+        // Auto Decrement Stok (lokal + push ke Google Sheets)
+        const orderItems = [];
+        for (const [id, qty] of Object.entries(cart)) {
+          const prod = products.find(p => p.id === id);
+          if (prod) {
+            prod.stock = Math.max(0, prod.stock - qty);
+            orderItems.push({
+              id: prod.id,
+              name: prod.name,
+              price: prod.price,
+              qty: qty,
+              subtotal: prod.price * qty
+            });
+            // Push stok baru ke Google Sheets (stok terpisah)
+            try { pushStockUpdateToSheet(prod.id, prod.stock); } catch (e) {}
+          }
+        }
+
+        try { saveProductsToStorage(); } catch (e) {}
+        try { renderProductCatalog(); } catch (e) {}
+
+        const newOrder = {
+          orderId,
+          sheetTag,
+          createdAt: now.toISOString(),
+          timeString: now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+          custName,
+          custPhone,
+          shippingMethod: selectedShipping,
+          shippingAddress: deliveryAddress,
+          paymentMethod: selectedPaymentMethod,
+          items: orderItems,
+          subtotal,
+          shippingCost,
+          grandTotal,
+          proofBase64
+        };
+
+        orders.unshift(newOrder);
+        try {
+          saveOrdersToStorage();
+        } catch (storageErr) {
+          console.warn("localStorage penuh (kuota bukti transfer), menyimpan tanpa foto:", storageErr);
+          try {
+            const orderWithoutProof = { ...newOrder, proofBase64: "" };
+            orders[0] = orderWithoutProof;
+            saveOrdersToStorage();
+          } catch (e) {
+            console.error("Gagal simpan orders ke localStorage:", e);
+          }
+        }
+
+        // Kirim data pesanan ke Google Sheets "LOG PESANAN TETESDRINK" (background non-blocking)
+        try {
+          pushOrderLogToSheet(newOrder);
+        } catch (e) {
+          console.warn("Gagal trigger pushOrderLogToSheet:", e);
+        }
+
+        // Bersihkan keranjang & tutup modal checkout
+        cart = {};
+        proofBase64 = "";
+        try { updateCartBadge(); } catch (e) {}
+        try { closeCartModal(); } catch (e) {}
+
+        // Tampilkan modal Berhasil
+        showOrderSuccess(newOrder);
+      } catch (fatalErr) {
+        console.error("Error pada submitOrderFinal:", fatalErr);
+        // Fallback jika ada error tak terduga, tetap tutup keranjang dan tampilkan pesan
+        try { closeCartModal(); } catch (e) {}
+        alert("Pesanan Anda sedang diproses. Mohon periksa WhatsApp untuk konfirmasi pesanan.");
       }
-
-      saveProductsToStorage();
-      renderProductCatalog();
-
-      const newOrder = {
-        orderId,
-        sheetTag,
-        createdAt: now.toISOString(),
-        timeString: now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-        custName,
-        custPhone,
-        shippingMethod: selectedShipping,
-        shippingAddress: deliveryAddress,
-        paymentMethod: selectedPaymentMethod,
-        items: orderItems,
-        subtotal,
-        shippingCost,
-        grandTotal,
-        proofBase64
-      };
-
-      orders.unshift(newOrder);
-      saveOrdersToStorage();
-
-      // Kirim data pesanan ke Google Sheets "LOG PESANAN TETESDRINK"
-      pushOrderLogToSheet(newOrder);
-
-      cart = {};
-      proofBase64 = "";
-      updateCartBadge();
-      closeCartModal();
-
-      showOrderSuccess(newOrder);
     }
 
     function showOrderSuccess(order) {
